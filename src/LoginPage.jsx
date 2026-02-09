@@ -38,19 +38,7 @@ const LoginPage = () => {
     };
 
     const handleGuestContinue = () => {
-        // Just navigate to home, AuthContext/RequireAuth handles the rest?
-        // Actually, if we want guest mode, we need to handle it.
-        // For now, let's just go home, but RequireAuth might bounce us back if we strictly require auth.
-        // If we want to allow guest access, we should probably modify RequireAuth or 
-        // set a 'guest' user in context. 
-        // For this iteration, let's assume we want to protect the main flow, 
-        // but maybe the user wants to browse without login. 
-        // For simplicity's sake in this "Google Login" task, let's enforce login for now,
-        // or just let them go to home and see what happens (they get bounced back).
-
-        // Strategy: We haven't implemented Guest Mode in AuthContext.
-        // Let's make Guest Continue imply "Ignore login for now" or just alert.
-        alert("게스트 모드는 아직 준비중입니다.");
+        navigate('/', { replace: true });
     };
 
     return (

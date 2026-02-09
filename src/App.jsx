@@ -335,11 +335,7 @@ function App() {
                     <Route path="/login" element={<LoginPage />} />
                     <Route
                         path="/"
-                        element={
-                            <RequireAuth>
-                                <HomePage />
-                            </RequireAuth>
-                        }
+                        element={<HomePage />}
                     />
                     <Route
                         path="/favorites"
@@ -359,11 +355,7 @@ function App() {
                     />
                     <Route
                         path="/restaurant/:id"
-                        element={
-                            <RequireAuth>
-                                <RestaurantDetailWrapper />
-                            </RequireAuth>
-                        }
+                        element={<RestaurantDetailWrapper />}
                     />
                 </Routes>
             </Router>
