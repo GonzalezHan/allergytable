@@ -19,7 +19,7 @@ const LoginPage = () => {
         if (window.naver) {
             const naverLogin = new window.naver.LoginWithNaverId({
                 clientId: "iKV15NQlHWQqWRk2xId8",
-                callbackUrl: "http://localhost:5173/login",
+                callbackUrl: window.location.origin + "/login",
                 isPopup: false,
                 loginButton: { color: "green", type: 3, height: 60 }
             });
