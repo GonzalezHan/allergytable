@@ -44,9 +44,9 @@ const LoginPage = () => {
         }
     }, [loginWithNaver]);
 
-    // Redirect if already logged in
+    // Redirect if already logged in (ignore guests to allow them to log in for real)
     useEffect(() => {
-        if (currentUser) {
+        if (currentUser && !currentUser.isGuest) {
             const from = location.state?.from?.pathname || "/";
             navigate(from, { replace: true });
         }

@@ -18,7 +18,8 @@ function RequireAuth({ children }) {
     const { currentUser } = useAuth();
     const location = useLocation();
 
-    if (!currentUser) {
+    // Block if no user OR if user is a guest
+    if (!currentUser || currentUser.isGuest) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
     return children;
