@@ -31,8 +31,7 @@ export function AuthProvider({ children }) {
                 return reject('카카오 인증 모듈이 아직 준비되지 않았습니다. 잠시 후 버튼을 다시 눌러주세요.');
             }
 
-            window.Kakao.Auth.login({
-                prompt: 'login',
+            window.Kakao.Auth.loginForm({
                 success: function (authObj) {
                     console.log('Kakao login success', authObj);
                     // In real app, exchange for Firebase Custom Token
