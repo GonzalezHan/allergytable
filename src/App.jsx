@@ -6,8 +6,11 @@ import LoginPage from './LoginPage'
 import AllergyProfileSetup from './AllergyProfileSetup'
 import FavoritesPage from './FavoritesPage'
 import RestaurantDetail from './RestaurantDetail'
+import ReservationSuccess from './ReservationSuccess'
 import { AuthProvider, useAuth } from './AuthContext'
-import { mockRestaurants, allergensList, categories } from './data'
+import { mockRestaurants, allergensList, categories } from './data.jsx'
+import { useRestaurants } from './hooks/useRestaurants'
+import seedDatabase from './seedData'
 import './index.css'
 
 // --- Components ---
@@ -27,7 +30,7 @@ function BottomNav() {
     const location = useLocation();
 
     // Hide on login page and restaurant detail page
-    if (location.pathname === '/login' || location.pathname.startsWith('/restaurant/')) return null;
+    if (location.pathname === '/login' || location.pathname.startsWith('/restaurant/') || location.pathname === '/reservation-success') return null;
 
     const navItems = [
         { path: '/', icon: <Search size={24} />, label: '검색' },
@@ -81,6 +84,7 @@ function BottomNav() {
 function HomePage() {
     const navigate = useNavigate()
     const [activeCategory, setActiveCategory] = useState('all');
+    const { restaurants, loading } = useRestaurants();
 
     return (
         <div className="home-container" style={{ paddingBottom: '2rem' }}>
@@ -100,6 +104,14 @@ function HomePage() {
                     <ChevronDown size={18} color="var(--text-primary)" />
                 </div>
                 <div style={{ display: 'flex', gap: '16px' }}>
+                    {/* Temporary Seed Button */}
+                    <button onClick={() => {
+                        if (confirm('데이터를 초기화하시겠습니까? (기존 데이터 덮어씌움)')) {
+                            seedDatabase().then(() => alert('데이터 업로드 완료! 새로고침 해주세요.'));
+                        }
+                    }} style={{ fontSize: '10px', padding: '4px 8px', border: '1px solid red', borderRadius: '4px', background: 'white' }}>
+                        dev:DB초기화
+                    </button>
                     <Bell size={24} color="var(--text-primary)" />
                 </div>
             </header>
@@ -160,7 +172,9 @@ function HomePage() {
                     <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>전체보기</span>
                 </div>
                 <div className="no-scrollbar" style={{ display: 'flex', gap: '12px', padding: '0 1.25rem', overflowX: 'auto' }}>
-                    {mockRestaurants.map(res => (
+                    {loading ? (
+                        <div style={{ padding: '20px', color: 'var(--text-tertiary)' }}>로딩중...</div>
+                    ) : restaurants.map(res => (
                         <div key={res.id} onClick={() => navigate(`/restaurant/${res.id}`)} style={{ minWidth: '160px', width: '160px', cursor: 'pointer' }}>
                             <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', height: '200px', marginBottom: '8px' }}>
                                 <img src={res.image} alt={res.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -189,7 +203,9 @@ function HomePage() {
                     <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>지도보기</span>
                 </div>
                 <div style={{ padding: '0 1.25rem' }}>
-                    {mockRestaurants.slice(0, 2).map((res, idx) => (
+                    {loading ? (
+                        <div>로딩중...</div>
+                    ) : restaurants.slice(0, 2).map((res, idx) => (
                         <div key={res.id} onClick={() => navigate(`/restaurant/${res.id}`)} style={{
                             display: 'flex',
                             gap: '16px',
@@ -203,7 +219,7 @@ function HomePage() {
                                 <h4 style={{ margin: '0 0 4px', fontSize: '16px' }}>{res.name}</h4>
                                 <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>{res.location} · {res.distance}</p>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                    {res.safeFor.map(aid => (
+                                    {res.safeFor && res.safeFor.map(aid => (
                                         <span key={aid} style={{ fontSize: '11px', backgroundColor: 'var(--safe-bg)', color: 'var(--safe-green)', padding: '2px 6px', borderRadius: '4px' }}>
                                             {allergensList.find(a => a.id === aid)?.name} 안심
                                         </span>
@@ -231,9 +247,7 @@ function ProfilePageWrapper() {
 }
 
 function RestaurantDetailWrapper() {
-    return <RestaurantDetail /> // Detail handles route param internaly or via wrapper? 
-    // Wait, RestaurantDetail usually takes props or params. Let's assume params for now, 
-    // or we'll update RestaurantDetail.jsx to use useParams() next.
+    return <RestaurantDetail />
 }
 
 function App() {
@@ -247,6 +261,7 @@ function App() {
                         <Route path="/favorites" element={<RequireAuth><FavoritesPageWrapper /></RequireAuth>} />
                         <Route path="/profile" element={<RequireAuth><ProfilePageWrapper /></RequireAuth>} />
                         <Route path="/restaurant/:id" element={<RestaurantDetailWrapper />} />
+                        <Route path="/reservation-success" element={<ReservationSuccess />} />
                     </Routes>
                     <BottomNav />
                 </div>

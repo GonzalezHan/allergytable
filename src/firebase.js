@@ -16,8 +16,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
+import { getFirestore } from "firebase/firestore";
+
+// ... existing code ...
+
 // Initialize Firebase Authentication and get a reference to the service
 const auth = getAuth(app);
+const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-export { auth, googleProvider, analytics };
+export { auth, db, googleProvider, analytics };
