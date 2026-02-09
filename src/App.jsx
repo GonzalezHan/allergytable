@@ -10,7 +10,6 @@ import ReservationSuccess from './ReservationSuccess'
 import { AuthProvider, useAuth } from './AuthContext'
 import { mockRestaurants, allergensList, categories } from './data.jsx'
 import { useRestaurants } from './hooks/useRestaurants'
-import seedDatabase from './seedData'
 import './index.css'
 
 // --- Components ---
@@ -104,14 +103,6 @@ function HomePage() {
                     <ChevronDown size={18} color="var(--text-primary)" />
                 </div>
                 <div style={{ display: 'flex', gap: '16px' }}>
-                    {/* Temporary Seed Button */}
-                    <button onClick={() => {
-                        if (confirm('데이터를 초기화하시겠습니까? (기존 데이터 덮어씌움)')) {
-                            seedDatabase().then(() => alert('데이터 업로드 완료! 새로고침 해주세요.'));
-                        }
-                    }} style={{ fontSize: '10px', padding: '4px 8px', border: '1px solid red', borderRadius: '4px', background: 'white' }}>
-                        dev:DB초기화
-                    </button>
                     <Bell size={24} color="var(--text-primary)" />
                 </div>
             </header>
