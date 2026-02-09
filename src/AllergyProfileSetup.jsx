@@ -30,7 +30,7 @@ const AllergyProfileSetup = ({ onBack, onSave, initialAllergies = [], initialSev
     const handleLogout = async () => {
         try {
             await logout();
-            // Redirect handled by AuthContext state change or RequireAuth
+            navigate('/login', { replace: true });
         } catch (error) {
             console.error("Failed to log out", error);
         }
