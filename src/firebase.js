@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+// v1.0.1 - Security hardened 2026-02-10
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
