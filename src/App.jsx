@@ -29,7 +29,7 @@ function BottomNav() {
     const location = useLocation();
 
     // Hide on login page and restaurant detail page
-    if (location.pathname === '/login' || location.pathname.startsWith('/restaurant/') || location.pathname === '/reservation-success') return null;
+    if (location.pathname === '/login' || location.pathname.startsWith('/restaurant/') || location.pathname === '/reservation-success' || location.pathname === '/map') return null;
 
     const navItems = [
         { path: '/', icon: <Search size={24} />, label: '검색' },
@@ -191,7 +191,7 @@ function HomePage() {
             <section style={{ padding: '0 0 1.5rem' }}>
                 <div style={{ padding: '0 1.25rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h3>내 주변 안심 존 📍</h3>
-                    <span style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>지도보기</span>
+                    <span onClick={() => navigate('/map')} style={{ fontSize: '12px', color: 'var(--text-tertiary)', cursor: 'pointer' }}>지도보기</span>
                 </div>
                 <div style={{ padding: '0 1.25rem' }}>
                     {loading ? (
@@ -241,6 +241,11 @@ function RestaurantDetailWrapper() {
     return <RestaurantDetail />
 }
 
+function MapViewWrapper() {
+    const { restaurants } = useRestaurants();
+    return <MapView restaurants={restaurants} />
+}
+
 function App() {
     return (
         <AuthProvider>
@@ -253,6 +258,7 @@ function App() {
                         <Route path="/profile" element={<RequireAuth><ProfilePageWrapper /></RequireAuth>} />
                         <Route path="/restaurant/:id" element={<RestaurantDetailWrapper />} />
                         <Route path="/reservation-success" element={<ReservationSuccess />} />
+                        <Route path="/map" element={<MapViewWrapper />} />
                     </Routes>
                     <BottomNav />
                 </div>

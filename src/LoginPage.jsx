@@ -5,9 +5,38 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import './index.css';
 
 const LoginPage = () => {
-    const { loginWithGoogle, currentUser } = useAuth();
+    const { loginWithGoogle, loginWithKakao, loginWithNaver, currentUser } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+
+    useEffect(() => {
+        // Initialize Kakao SDK
+        if (window.Kakao && !window.Kakao.isInitialized()) {
+            window.Kakao.init('6758187da106ac91415a4fc813c1edde');
+        }
+
+        // Initialize Naver Login
+        if (window.naver) {
+            const naverLogin = new window.naver.LoginWithNaverId({
+                clientId: "iKV15NQlHWQqWRk2xId8",
+                callbackUrl: "http://localhost:5173/login",
+                isPopup: false,
+                loginButton: { color: "green", type: 3, height: 60 }
+            });
+            naverLogin.init();
+
+            // Handle Naver callback if we are in one
+            window.addEventListener('load', () => {
+                naverLogin.getLoginStatus((status) => {
+                    if (status) {
+                        const user = naverLogin.user;
+                        console.log('Naver login success', user);
+                        loginWithNaver(user);
+                    }
+                });
+            });
+        }
+    }, [loginWithNaver]);
 
     // Redirect if already logged in
     useEffect(() => {
@@ -20,21 +49,25 @@ const LoginPage = () => {
     const handleGoogleLogin = async () => {
         try {
             await loginWithGoogle();
-            // Navigation handled by useEffect
         } catch (error) {
             console.error("Google login failed", error);
-            alert("Google 로그인에 실패했습니다. 다시 시도해주세요.");
+            alert("Google 로그인에 실패했습니다.");
         }
     };
 
-    const handleKakaoLogin = () => {
-        // TODO: Implement Kakao OAuth
-        console.log('Kakao login clicked');
+    const handleKakaoLogin = async () => {
+        try {
+            await loginWithKakao();
+        } catch (error) {
+            console.error('Kakao login failed', error);
+            alert('카카오 로그인 중 오류가 발생했습니다.');
+        }
     };
 
     const handleNaverLogin = () => {
-        // TODO: Implement Naver OAuth
-        console.log('Naver login clicked');
+        const naverBtn = document.getElementById('naverIdLogin_loginButton');
+        if (naverBtn) naverBtn.click();
+        else loginWithNaver(); // Fallback to mock if SDK button not found
     };
 
     const handleGuestContinue = () => {
@@ -92,6 +125,9 @@ const LoginPage = () => {
             <p className="login-benefit">
                 로그인하면 나만의 알러지 프로필을 저장할 수 있어요
             </p>
+
+            {/* Hidden Naver Login Button for SDK */}
+            <div id="naverIdLogin" style={{ display: 'none' }}></div>
 
             {/* Guest Continue */}
             <button

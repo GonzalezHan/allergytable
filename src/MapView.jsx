@@ -1,42 +1,115 @@
-import React from 'react'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
-import L from 'leaflet'
+import React, { useState } from 'react'
+import { Map, MapMarker, CustomOverlayMap } from 'react-kakao-maps-sdk'
+import { ChevronLeft, Info, Star } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import './index.css'
 
-// Fix for default marker icons in Leaflet with React
-import markerIcon from 'leaflet/dist/images/marker-icon.png'
-import markerShadow from 'leaflet/dist/images/marker-shadow.png'
-
-let DefaultIcon = L.icon({
-    iconUrl: markerIcon,
-    shadowUrl: markerShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-})
-
-L.Marker.prototype.options.icon = DefaultIcon
-
-const MapView = ({ restaurants, selectedAllergies }) => {
-    // Center of restaurants for demo
-    const center = [37.5665, 126.9780] // Seoul City Hall as default
+const MapView = ({ restaurants = [] }) => {
+    const navigate = useNavigate();
+    const [selectedId, setSelectedId] = useState(null);
+    const center = { lat: 37.5665, lng: 126.9780 }; // Seoul City Hall
 
     return (
-        <div className="map-container">
-            <MapContainer center={center} zoom={14} scrollWheelZoom={false}>
-                <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                {restaurants.map(res => (
-                    <Marker key={res.id} position={res.position}>
-                        <Popup>
-                            <strong>{res.name}</strong><br />
-                            {res.type}<br />
-                            {res.safeFor.filter(a => selectedAllergies.includes(a)).length > 0 ? '✅ 안심 메뉴 있음' : '❌ 매칭되는 안심 메뉴 없음'}
-                        </Popup>
-                    </Marker>
+        <div className="map-page" style={{ height: '100vh', width: '100%', position: 'relative' }}>
+            {/* 1. Map Header */}
+            <header style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 10,
+                padding: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                background: 'rgba(255,255,255,0.8)',
+                backdropFilter: 'blur(8px)',
+                borderBottom: '1px solid var(--border-color)'
+            }}>
+                <button onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '4px' }}>
+                    <ChevronLeft size={24} />
+                </button>
+                <h1 style={{ fontSize: '18px', fontWeight: 600 }}>내 주변 안심 존 📍</h1>
+            </header>
+
+            {/* 2. Map Instance */}
+            <Map
+                center={center}
+                style={{ width: "100%", height: "100%" }}
+                level={4}
+            >
+                {restaurants.map((res) => (
+                    <MapMarker
+                        key={res.id}
+                        position={{ lat: res.position[0], lng: res.position[1] }}
+                        onClick={() => setSelectedId(res.id === selectedId ? null : res.id)}
+                        image={{
+                            src: 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png', // Custom marker icon
+                            size: { width: 32, height: 32 }
+                        }}
+                    />
                 ))}
-            </MapContainer>
+
+                {/* 3. Info Window (Custom Overlay) */}
+                {selectedId && (
+                    <CustomOverlayMap
+                        position={{
+                            lat: restaurants.find(r => r.id === selectedId).position[0],
+                            lng: restaurants.find(r => r.id === selectedId).position[1]
+                        }}
+                        yAnchor={1.2}
+                    >
+                        <div onClick={() => navigate(`/restaurant/${selectedId}`)} style={{
+                            background: 'white',
+                            padding: '12px 16px',
+                            borderRadius: '16px',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                            minWidth: '200px',
+                            display: 'flex',
+                            gap: '12px',
+                            cursor: 'pointer',
+                            border: '1px solid var(--primary-color)'
+                        }}>
+                            <img
+                                src={restaurants.find(r => r.id === selectedId).image}
+                                alt=""
+                                style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }}
+                            />
+                            <div>
+                                <h3 style={{ fontSize: '14px', margin: '0 0 4px' }}>{restaurants.find(r => r.id === selectedId).name}</h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                                    <Star size={12} fill="var(--warning-yellow)" color="var(--warning-yellow)" />
+                                    <span>{restaurants.find(r => r.id === selectedId).rating}</span>
+                                    <span>· {restaurants.find(r => r.id === selectedId).type}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </CustomOverlayMap>
+                )}
+            </Map>
+
+            {/* 4. Bottom Floating Toggle (Filters placeholder) */}
+            <div style={{
+                position: 'absolute',
+                bottom: '30px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 10,
+                background: 'white',
+                padding: '8px 20px',
+                borderRadius: '30px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                display: 'flex',
+                gap: '12px',
+                fontSize: '14px',
+                fontWeight: 600,
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border-color)'
+            }}>
+                <span>#땅콩안심</span>
+                <span style={{ opacity: 0.2 }}>|</span>
+                <span>#계란안심</span>
+            </div>
         </div>
     )
 }
