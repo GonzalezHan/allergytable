@@ -21,7 +21,8 @@ const LoginPage = () => {
                 clientId: "iKV15NQlHWQqWRk2xId8",
                 callbackUrl: window.location.origin + "/login",
                 isPopup: false,
-                loginButton: { color: "green", type: 3, height: 60 }
+                loginButton: { color: "green", type: 3, height: 60 },
+                authType: 'reauthenticate'
             });
             naverLogin.init();
 
