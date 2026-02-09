@@ -14,14 +14,20 @@ import './index.css'
 
 // --- Components ---
 
-function RequireAuth({ children }) {
+function RequireAuth({ children, allowGuest = false }) {
     const { currentUser } = useAuth();
     const location = useLocation();
 
-    // Block if no user OR if user is a guest
-    if (!currentUser || currentUser.isGuest) {
+    // If no user at all, redirect to login
+    if (!currentUser) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
+
+    // If user is a guest but the route doesn't allow guests, redirect to login
+    if (currentUser.isGuest && !allowGuest) {
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
     return children;
 }
 
@@ -254,12 +260,12 @@ function App() {
                 <div className="app-shell">
                     <Routes>
                         <Route path="/login" element={<LoginPage />} />
-                        <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
+                        <Route path="/" element={<RequireAuth allowGuest={true}><HomePage /></RequireAuth>} />
                         <Route path="/favorites" element={<RequireAuth><FavoritesPageWrapper /></RequireAuth>} />
                         <Route path="/profile" element={<RequireAuth><ProfilePageWrapper /></RequireAuth>} />
-                        <Route path="/restaurant/:id" element={<RequireAuth><RestaurantDetailWrapper /></RequireAuth>} />
-                        <Route path="/reservation-success" element={<RequireAuth><ReservationSuccess /></RequireAuth>} />
-                        <Route path="/map" element={<RequireAuth><MapViewWrapper /></RequireAuth>} />
+                        <Route path="/restaurant/:id" element={<RequireAuth allowGuest={true}><RestaurantDetailWrapper /></RequireAuth>} />
+                        <Route path="/reservation-success" element={<RequireAuth allowGuest={true}><ReservationSuccess /></RequireAuth>} />
+                        <Route path="/map" element={<RequireAuth allowGuest={true}><MapViewWrapper /></RequireAuth>} />
                     </Routes>
                     <BottomNav />
                 </div>
