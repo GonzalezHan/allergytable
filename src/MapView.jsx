@@ -1,3 +1,4 @@
+import React, { useState } from 'react'
 import { Map, MapMarker, CustomOverlayMap, useKakaoLoader } from 'react-kakao-maps-sdk'
 import { ChevronLeft, Info, Star } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
