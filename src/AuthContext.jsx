@@ -57,6 +57,10 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const loginAsGuest = () => {
+        setCurrentUser({ displayName: '게스트', isGuest: true });
+    };
+
     function logout() {
         setCurrentUser(null);
         return signOut(auth);
@@ -76,6 +80,7 @@ export function AuthProvider({ children }) {
         loginWithGoogle,
         loginWithKakao,
         loginWithNaver,
+        loginAsGuest,
         logout
     };
 

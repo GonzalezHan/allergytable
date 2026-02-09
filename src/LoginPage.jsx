@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import './index.css';
 
 const LoginPage = () => {
-    const { loginWithGoogle, loginWithKakao, loginWithNaver, currentUser } = useAuth();
+    const { loginWithGoogle, loginWithKakao, loginWithNaver, loginAsGuest, currentUser } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -133,8 +133,13 @@ const LoginPage = () => {
             {/* Hidden Naver Login Button for SDK */}
             <div id="naverIdLogin" style={{ display: 'none' }}></div>
 
-            {/* Hidden Naver Login Button for SDK */}
-            <div id="naverIdLogin" style={{ display: 'none' }}></div>
+            {/* Guest Continue */}
+            <button
+                className="guest-link"
+                onClick={handleGuestContinue}
+            >
+                로그인 없이 둘러보기
+            </button>
         </div>
     );
 };
