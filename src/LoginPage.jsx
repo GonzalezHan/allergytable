@@ -25,15 +25,13 @@ const LoginPage = () => {
             });
             naverLogin.init();
 
-            // Handle Naver callback if we are in one
-            window.addEventListener('load', () => {
-                naverLogin.getLoginStatus((status) => {
-                    if (status) {
-                        const user = naverLogin.user;
-                        console.log('Naver login success', user);
-                        loginWithNaver(user);
-                    }
-                });
+            // Handle Naver callback directly (especially on page load with hash)
+            naverLogin.getLoginStatus((status) => {
+                if (status) {
+                    const user = naverLogin.user;
+                    console.log('Naver login success', user);
+                    loginWithNaver(user);
+                }
             });
         }
     }, [loginWithNaver]);
