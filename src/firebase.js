@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBPrbBtv36t1C4AERSNUP9TZ1MCqm3AwZ4",
@@ -14,11 +15,14 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
-import { getFirestore } from "firebase/firestore";
-
-// ... existing code ...
+// Initialize Analytics conditionally
+let analytics = null;
+isSupported().then((supported) => {
+    if (supported) {
+        analytics = getAnalytics(app);
+    }
+}).catch(err => console.error("Firebase Analytics support check failed:", err));
 
 // Initialize Firebase Authentication and get a reference to the service
 const auth = getAuth(app);
