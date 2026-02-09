@@ -19,7 +19,18 @@ export function AuthProvider({ children }) {
     // SSO Mock/SDK Implementations
     const loginWithKakao = () => {
         return new Promise((resolve, reject) => {
-            if (!window.Kakao) return reject('Kakao SDK not loaded');
+            if (!window.Kakao) return reject('카카오 SDK 서버와 연결되지 않았습니다.');
+
+            // Re-ensure initialization (safe even if already done)
+            if (!window.Kakao.isInitialized()) {
+                window.Kakao.init('6758187da106ac91415a4fc813c1edde');
+            }
+
+            if (!window.Kakao.Auth || typeof window.Kakao.Auth.login !== 'function') {
+                console.error('Kakao.Auth details:', window.Kakao.Auth);
+                return reject('카카오 인증 모듈이 아직 준비되지 않았습니다. 잠시 후 버튼을 다시 눌러주세요.');
+            }
+
             window.Kakao.Auth.login({
                 success: function (authObj) {
                     console.log('Kakao login success', authObj);

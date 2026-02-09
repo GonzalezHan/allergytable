@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, Check, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import './index.css';
 
@@ -23,6 +24,7 @@ const severityLevels = [
 ];
 
 const AllergyProfileSetup = ({ onBack, onSave, initialAllergies = [], initialSeverity = 'warning' }) => {
+    const navigate = useNavigate();
     const { logout } = useAuth();
     const [selectedAllergies, setSelectedAllergies] = useState(initialAllergies);
     const [severity, setSeverity] = useState(initialSeverity);
