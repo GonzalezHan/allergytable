@@ -31,6 +31,11 @@ const LoginPage = () => {
                     const user = naverLogin.user;
                     console.log('Naver login success', user);
                     loginWithNaver(user);
+
+                    // Clear the hash to prevent auto-login loop after logout
+                    if (window.location.hash) {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
                 }
             });
         }
