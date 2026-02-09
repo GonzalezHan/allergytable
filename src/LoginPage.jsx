@@ -74,8 +74,10 @@ const LoginPage = () => {
         const naverBtn = document.getElementById('naverIdLogin_loginButton');
         if (naverBtn) naverBtn.click();
         else loginWithNaver(); // Fallback to mock if SDK button not found
+    }; const handleGuestContinue = () => {
+        loginAsGuest();
+        navigate('/', { replace: true });
     };
-
 
 
     return (
