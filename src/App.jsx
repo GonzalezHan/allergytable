@@ -253,7 +253,7 @@ function App() {
                 <div className="app-shell">
                     <Routes>
                         <Route path="/login" element={<LoginPage />} />
-                        <Route path="/" element={<HomePage />} />
+                        <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
                         <Route path="/favorites" element={<RequireAuth><FavoritesPageWrapper /></RequireAuth>} />
                         <Route path="/profile" element={<RequireAuth><ProfilePageWrapper /></RequireAuth>} />
                         <Route path="/restaurant/:id" element={<RestaurantDetailWrapper />} />
