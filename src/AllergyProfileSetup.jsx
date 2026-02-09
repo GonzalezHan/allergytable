@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Check } from 'lucide-react';
+import { ChevronLeft, Check, LogOut } from 'lucide-react';
+import { useAuth } from './AuthContext';
 import './index.css';
 
 const allergenOptions = [
@@ -22,8 +23,18 @@ const severityLevels = [
 ];
 
 const AllergyProfileSetup = ({ onBack, onSave, initialAllergies = [], initialSeverity = 'warning' }) => {
+    const { logout } = useAuth();
     const [selectedAllergies, setSelectedAllergies] = useState(initialAllergies);
     const [severity, setSeverity] = useState(initialSeverity);
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            // Redirect handled by AuthContext state change or RequireAuth
+        } catch (error) {
+            console.error("Failed to log out", error);
+        }
+    };
 
     const toggleAllergy = (id) => {
         setSelectedAllergies(prev =>
@@ -43,7 +54,9 @@ const AllergyProfileSetup = ({ onBack, onSave, initialAllergies = [], initialSev
                     <ChevronLeft size={24} />
                 </button>
                 <h1>나의 알러지 프로필</h1>
-                <div style={{ width: 24 }} /> {/* Spacer */}
+                <button className="logout-button" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}>
+                    <LogOut size={20} />
+                </button>
             </header>
 
             <div className="profile-content">
