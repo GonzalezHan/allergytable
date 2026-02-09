@@ -28,12 +28,14 @@ const LoginPage = () => {
             // Handle Naver callback directly (especially on page load with hash)
             naverLogin.getLoginStatus((status) => {
                 if (status) {
-                    const user = naverLogin.user;
-                    console.log('Naver login success', user);
-                    loginWithNaver(user);
-
-                    // Clear the hash to prevent auto-login loop after logout
+                    // CRITICAL: Only auto-login if we have a hash (returning from redirect)
+                    // This prevents the logout loop where the cookie session triggers auto-login on the login page
                     if (window.location.hash) {
+                        const user = naverLogin.user;
+                        console.log('Naver login success', user);
+                        loginWithNaver(user);
+
+                        // Clear the hash to prevent auto-login loop after logout
                         window.history.replaceState({}, document.title, window.location.pathname);
                     }
                 }
