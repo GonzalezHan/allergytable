@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { Map, MapMarker, CustomOverlayMap } from 'react-kakao-maps-sdk'
+import { Map, MapMarker, CustomOverlayMap, useKakaoLoader } from 'react-kakao-maps-sdk'
 import { ChevronLeft, Info, Star } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import './index.css'
@@ -8,6 +7,15 @@ const MapView = ({ restaurants = [] }) => {
     const navigate = useNavigate();
     const [selectedId, setSelectedId] = useState(null);
     const center = { lat: 37.5665, lng: 126.9780 }; // Seoul City Hall
+
+    // Modern SDK loading without parser-blocking warnings
+    const { loading: sdkLoading, error: sdkError } = useKakaoLoader({
+        appkey: "6758187da106ac91415a4fc813c1edde",
+        libraries: ["services", "clusterer"],
+    });
+
+    if (sdkLoading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>지도를 불러오는 중...</div>;
+    if (sdkError) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>지도 로딩 중 오류가 발생했습니다.</div>;
 
     return (
         <div className="map-page" style={{ height: '100vh', width: '100%', position: 'relative' }}>
