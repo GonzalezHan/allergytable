@@ -27,3 +27,8 @@ dist-ssr
 .agent/
 brain/
 .npm-cache/
+
+# Environment variables
+.env
+.env.local
+.env.*.local

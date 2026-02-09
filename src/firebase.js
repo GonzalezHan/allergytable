@@ -4,13 +4,13 @@ import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBPrbBtv36t1C4AERSNUP9TZ1MCqm3AwZ4",
-    authDomain: "allergytable-278cb.firebaseapp.com",
-    projectId: "allergytable-278cb",
-    storageBucket: "allergytable-278cb.firebasestorage.app",
-    messagingSenderId: "774850419649",
-    appId: "1:774850419649:web:df75e2bca75e5e0b122d40",
-    measurementId: "G-6LL978EJ24"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
