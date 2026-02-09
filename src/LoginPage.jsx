@@ -22,7 +22,7 @@ const LoginPage = () => {
                 callbackUrl: window.location.origin + "/login",
                 isPopup: false,
                 loginButton: { color: "green", type: 3, height: 60 },
-                authType: 'reauthenticate'
+                auth_type: 'reauthenticate'
             });
             naverLogin.init();
 

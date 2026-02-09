@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
             }
 
             window.Kakao.Auth.login({
-                prompts: 'select_account',
+                prompt: 'login',
                 success: function (authObj) {
                     console.log('Kakao login success', authObj);
                     // In real app, exchange for Firebase Custom Token
