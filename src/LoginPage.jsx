@@ -76,9 +76,7 @@ const LoginPage = () => {
         else loginWithNaver(); // Fallback to mock if SDK button not found
     };
 
-    const handleGuestContinue = () => {
-        navigate('/', { replace: true });
-    };
+
 
     return (
         <div className="login-container">
@@ -135,13 +133,8 @@ const LoginPage = () => {
             {/* Hidden Naver Login Button for SDK */}
             <div id="naverIdLogin" style={{ display: 'none' }}></div>
 
-            {/* Guest Continue */}
-            <button
-                className="guest-link"
-                onClick={handleGuestContinue}
-            >
-                로그인 없이 둘러보기
-            </button>
+            {/* Hidden Naver Login Button for SDK */}
+            <div id="naverIdLogin" style={{ display: 'none' }}></div>
         </div>
     );
 };

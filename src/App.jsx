@@ -256,9 +256,9 @@ function App() {
                         <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
                         <Route path="/favorites" element={<RequireAuth><FavoritesPageWrapper /></RequireAuth>} />
                         <Route path="/profile" element={<RequireAuth><ProfilePageWrapper /></RequireAuth>} />
-                        <Route path="/restaurant/:id" element={<RestaurantDetailWrapper />} />
-                        <Route path="/reservation-success" element={<ReservationSuccess />} />
-                        <Route path="/map" element={<MapViewWrapper />} />
+                        <Route path="/restaurant/:id" element={<RequireAuth><RestaurantDetailWrapper /></RequireAuth>} />
+                        <Route path="/reservation-success" element={<RequireAuth><ReservationSuccess /></RequireAuth>} />
+                        <Route path="/map" element={<RequireAuth><MapViewWrapper /></RequireAuth>} />
                     </Routes>
                     <BottomNav />
                 </div>
