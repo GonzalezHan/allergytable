@@ -61,59 +61,125 @@ const ScanPage = () => {
 
         setIsAnalyzing(true);
         setError(null);
+        setResult(null); // Clear previous result
 
         try {
-            // Document says: "The API accepts image and audio inputs in Base64-encoded format."
-            // Py example uses raw base64 string.
-            // imgSrc is "data:image/jpeg;base64,....". We need to strip the prefix.
             const base64Image = imgSrc.split(',')[1];
+            let ocrText = "";
+            let isTextMode = false;
 
-            // Construct Prompt based on selected allergens
-            let promptText = "이 음식 사진을 분석해서 다음 정보를 JSON 포맷으로 정리해줘.\n\n" +
-                "{\n" +
-                "  \"menu\": \"추정되는 메뉴 이름\",\n" +
-                "  \"ingredients\": [\"주요 재료1\", \"주요 재료2\"],\n" +
-                "  \"allergens\": [\"발견된 알레르기 성분1\", \"발견된 알레르기 성분2\"],\n" +
-                "  \"risk_score\": 0~100 사이의 위험도 숫자 (0: 안전, 100: 매우 위험)\n" +
-                "}\n\n" +
-                "**주의사항:**\n" +
-                "1. 앞뒤에 사족이나 설명 없이 **오직 JSON 코드만** 출력해.\n" +
-                "2. 알레르기 성분은 [계란, 우유, 땅콩, 견과류, 밀, 대두, 갑각류, 생선] 중에서 식별해줘.\n";
-            
-            if (selectedAllergens.length > 0) {
-                const selectedNames = selectedAllergens.map(id => allergensList.find(a => a.id === id)?.name).join(', ');
-                promptText += `3. 특히 사용자에게 [${selectedNames}] 알러지가 있어. 이 성분이 포함될 가능성이 있다면 'allergens'에 반드시 포함하고 'risk_score'를 높게 잡아줘.`;
-            }
+            // 1. Try OCR First (Cloud Vision)
+            try {
+                const ocrResponse = await fetch('/api/ocr', {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        requests: [{
+                            image: { content: base64Image },
+                            features: [{ type: "TEXT_DETECTION" }]
+                        }]
+                    })
+                });
 
-            // Call our Cloudflare Function proxy (or local proxy via Vite)
-            const response = await fetch('/api/analyze', {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "kanana-o",
-                    messages: [
-                        {
-                            role: "user",
-                            content: [
-                                { type: "image_url", image_url: { url: base64Image } },
-                                { type: "text", text: promptText }
-                            ]
+                if (ocrResponse.ok) {
+                    const ocrData = await ocrResponse.json();
+                    const detections = ocrData.responses?.[0]?.textAnnotations;
+                    if (detections && detections.length > 0) {
+                        ocrText = detections[0].description;
+                        // Router Logic: If text detected is substantial (> 20 chars), use Text Mode
+                        if (ocrText.length > 30) {
+                            isTextMode = true;
                         }
-                    ],
-                    max_tokens: 1000
-                })
-            });
-
-            if (!response.ok) {
-                const errText = await response.text();
-                throw new Error(`API Error: ${response.status} - ${errText}`);
+                    }
+                }
+            } catch (ocrErr) {
+                console.warn("OCR Failed, falling back to Visual Analysis", ocrErr);
             }
 
-            const data = await response.json();
-            const content = data.choices[0].message.content;
-            setResult(content);
+            // 2. Branching Logic
+            if (isTextMode) {
+                // --- Text Mode (Ingredients Analysis) ---
+                console.log("Text Mode Activated", ocrText);
+                
+                // Simple keyword matching for allergens
+                const detectedAllergens = [];
+                const allergenKeywords = {
+                    'egg': ['계란', '달걀', '난백', '난황', '알가공품'],
+                    'dairy': ['우유', '치즈', '버터', '크림', '유당', '분유', '유청'],
+                    'peanut': ['땅콩', '피넛'],
+                    'wheat': ['밀', '글루텐', '소맥', '호밀'],
+                    'soy': ['대두', '콩', '두부', '두유', '레시틴'],
+                    'shellfish': ['새우', '게', '랍스터', '굴', '조개', '홍합', '전복'],
+                };
+
+                for (const [key, keywords] of Object.entries(allergenKeywords)) {
+                    if (keywords.some(k => ocrText.includes(k))) {
+                        // Map back to our display names
+                        const displayName = allergensList.find(a => a.id === key)?.name || key;
+                        detectedAllergens.push(displayName);
+                    }
+                }
+                
+                // Construct a result object similar to API response
+                const resultObj = {
+                    menu: "성분표/텍스트 분석 결과",
+                    ingredients: ["이미지 내 텍스트에서 추출"],
+                    allergens: detectedAllergens,
+                    risk_score: detectedAllergens.length > 0 ? 80 : 10,
+                    raw_text: ocrText // Store for display
+                };
+                
+                setResult(JSON.stringify(resultObj)); // Store using same state
+
+            } else {
+                // --- Image Mode (Kanana-o Visual Analysis) ---
+                console.log("Image Mode Activated");
+
+                // Construct Prompt based on selected allergens
+                let promptText = "이 음식 사진을 분석해서 다음 정보를 JSON 포맷으로 정리해줘.\n\n" +
+                    "{\n" +
+                    "  \"menu\": \"추정되는 메뉴 이름\",\n" +
+                    "  \"ingredients\": [\"주요 재료1\", \"주요 재료2\"],\n" +
+                    "  \"allergens\": [\"발견된 알레르기 성분1\", \"발견된 알레르기 성분2\"],\n" +
+                    "  \"risk_score\": 0~100 사이의 위험도 숫자 (0: 안전, 100: 매우 위험)\n" +
+                    "}\n\n" +
+                    "**주의사항:**\n" +
+                    "1. 앞뒤에 사족이나 설명 없이 **오직 JSON 코드만** 출력해.\n" +
+                    "2. 알레르기 성분은 [계란, 우유, 땅콩, 견과류, 밀, 대두, 갑각류, 생선] 중에서 식별해줘.\n";
+                
+                if (selectedAllergens.length > 0) {
+                    const selectedNames = selectedAllergens.map(id => allergensList.find(a => a.id === id)?.name).join(', ');
+                    promptText += `3. 특히 사용자에게 [${selectedNames}] 알러지가 있어. 이 성분이 포함될 가능성이 있다면 'allergens'에 반드시 포함하고 'risk_score'를 높게 잡아줘.`;
+                }
+
+                // Call Cloudflare Function proxy
+                const response = await fetch('/api/analyze', {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: "kanana-o",
+                        messages: [
+                            {
+                                role: "user",
+                                content: [
+                                    { type: "image_url", image_url: { url: base64Image } },
+                                    { type: "text", text: promptText }
+                                ]
+                            }
+                        ],
+                        max_tokens: 1000
+                    })
+                });
+
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(`API Error: ${response.status} - ${errText}`);
+                }
+
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+                setResult(content);
+            }
 
         } catch (err) {
             console.error("Analysis Failed:", err);
@@ -123,13 +189,13 @@ const ScanPage = () => {
         }
     };
 
-    // Helper to format result text (simplistic JSON parser or text renderer)
+    // Helper to format result text
     const renderResult = () => {
         if (!result) return null;
         
         let parsedData = null;
         try {
-             // Try to find JSON block first (sometimes models wrap in ```json ... ```)
+             // Try to find JSON block first
             const jsonMatch = result.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 parsedData = JSON.parse(jsonMatch[0]);
