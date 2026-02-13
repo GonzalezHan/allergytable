@@ -58,14 +58,11 @@ const ScanPage = () => {
             // imgSrc is "data:image/jpeg;base64,....". We need to strip the prefix.
             const base64Image = imgSrc.split(',')[1];
 
-            const API_KEY = "KC_IS_yDMcsmjvBNHuPt7BZyUVooP0NQnZGUCqxHB2wyvX6xWHCdPxJV2RHHVAAE7044YH";
-            const API_BASE_URL = "https://kanana-o.a2s-endpoint.kr-central-2.kakaocloud.com/v1"; 
-
-            const response = await fetch(`${API_BASE_URL}/chat/completions`, {
+            // Call our Cloudflare Function proxy (or local proxy via Vite)
+            const response = await fetch('/api/analyze', {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${API_KEY}`
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     model: "kanana-o",
@@ -78,7 +75,7 @@ const ScanPage = () => {
                             ]
                         }
                     ],
-                    max_tokens: 1000 // Adequate for JSON response
+                    max_tokens: 1000
                 })
             });
 
@@ -258,10 +255,14 @@ const ScanPage = () => {
                             position: 'absolute', bottom: 0, left: 0, right: 0, 
                             padding: '40px 20px 60px', 
                             background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
-                            display: 'flex', justifyContent: 'space-around', alignItems: 'center'
+                            display: 'flex', justifyContent: 'space-around', alignItems: 'center',
+                            zIndex: 20 
                         }}>
                             {/* Gallery */}
-                            <div onClick={() => fileInputRef.current.click()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <div onClick={() => {
+                                console.log("Album clicked");
+                                if (fileInputRef.current) fileInputRef.current.click();
+                            }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                                 <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <ImageIcon size={24} />
                                 </div>
@@ -272,7 +273,7 @@ const ScanPage = () => {
                                 ref={fileInputRef} 
                                 onChange={handleFileChange} 
                                 accept="image/*" 
-                                style={{ display: 'none' }} 
+                                style={{ position: 'absolute', opacity: 0, width: '1px', height: '1px', pointerEvents: 'none' }} 
                             />
 
                             {/* Shutter */}
