@@ -84,8 +84,8 @@ const LoginPage = () => {
         <div className="login-container">
             {/* Logo Section */}
             <div className="login-header">
-                <div className="login-logo">
-                    <ShieldCheck size={48} color="var(--safe-green)" />
+                <div className="login-logo" style={{ background: 'transparent' }}>
+                    <img src="/logo.png" alt="AllergyTable Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
                 <h1 className="login-title">알러지테이블</h1>
                 <p className="login-tagline">안심 외식의 시작</p>
