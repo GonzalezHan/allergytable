@@ -9,6 +9,12 @@ const ScanPage = () => {
     const webcamRef = useRef(null);
     const fileInputRef = useRef(null);
     
+    // State
+    const [imgSrc, setImgSrc] = useState(null);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [result, setResult] = useState(null);
+    const [error, setError] = useState(null);
+    const [facingMode, setFacingMode] = useState("environment");
     const [selectedAllergens, setSelectedAllergens] = useState([]);
 
     // Capture from Webcam
