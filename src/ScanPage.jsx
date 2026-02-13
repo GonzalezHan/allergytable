@@ -2,18 +2,14 @@ import React, { useState, useRef, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { Camera, Image as ImageIcon, X, Zap, RefreshCw, ChevronLeft, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { allergensList } from './data';
 
 const ScanPage = () => {
     const navigate = useNavigate();
     const webcamRef = useRef(null);
     const fileInputRef = useRef(null);
     
-    // State
-    const [imgSrc, setImgSrc] = useState(null);
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [result, setResult] = useState(null);
-    const [error, setError] = useState(null);
-    const [facingMode, setFacingMode] = useState("environment");
+    const [selectedAllergens, setSelectedAllergens] = useState([]);
 
     // Capture from Webcam
     const capture = useCallback(() => {
@@ -38,11 +34,19 @@ const ScanPage = () => {
         setFacingMode(prev => prev === "user" ? "environment" : "user");
     };
 
+    // Toggle Allergen Filter
+    const toggleAllergen = (id) => {
+        setSelectedAllergens(prev => 
+            prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
+        );
+    };
+
     // Reset
     const handleRetake = () => {
         setImgSrc(null);
         setResult(null);
         setError(null);
+        setSelectedAllergens([]);
     };
 
     // API Call
@@ -58,6 +62,14 @@ const ScanPage = () => {
             // imgSrc is "data:image/jpeg;base64,....". We need to strip the prefix.
             const base64Image = imgSrc.split(',')[1];
 
+            // Construct Prompt based on selected allergens
+            let promptText = "이 음식 사진을 분석해서 1. 메뉴 이름, 2. 주요 재료, 3. 알레르기 유발 가능 성분을 알려줘. 응답은 반드시 JSON 형식으로 해줘. 예시: {\"menu\": \"이름\", \"ingredients\": [\"재료1\", \"재료2\"], \"allergens\": [\"알러지1\"]}";
+            
+            if (selectedAllergens.length > 0) {
+                const selectedNames = selectedAllergens.map(id => allergensList.find(a => a.id === id)?.name).join(', ');
+                promptText += `\n특히 다음 알레르기 성분이 포함되어 있는지 **중점적으로 확인**해줘: [${selectedNames}]. 만약 해당 성분이 조금이라도 의심되면 allergens 리스트에 반드시 포함시켜줘.`;
+            }
+
             // Call our Cloudflare Function proxy (or local proxy via Vite)
             const response = await fetch('/api/analyze', {
                 method: "POST",
@@ -71,7 +83,7 @@ const ScanPage = () => {
                             role: "user",
                             content: [
                                 { type: "image_url", image_url: { url: base64Image } },
-                                { type: "text", text: "이 음식 사진을 분석해서 1. 메뉴 이름, 2. 주요 재료, 3. 알레르기 유발 가능 성분을 알려줘. 응답은 반드시 JSON 형식으로 해줘. 예시: {\"menu\": \"이름\", \"ingredients\": [\"재료1\", \"재료2\"], \"allergens\": [\"알러지1\"]}" }
+                                { type: "text", text: promptText }
                             ]
                         }
                     ],
@@ -119,10 +131,29 @@ const ScanPage = () => {
             );
         }
 
+        // Highlight detected allergens that match selected filter
+        const safetyCheck = selectedAllergens.every(id => 
+            !parsedData.allergens?.some(a => a.includes(allergensList.find(al => al.id === id)?.name))
+        );
+
         return (
             <div className="analysis-card" style={{ background: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '16px', backdropFilter: 'blur(10px)', width: '100%' }}>
                 <h3 style={{ margin: '0 0 10px', fontSize: '20px', color: '#FF4F28' }}>{parsedData.menu || "음식 분석 결과"}</h3>
                 
+                {selectedAllergens.length > 0 && (
+                    <div style={{ marginBottom: '15px', padding: '10px', borderRadius: '8px', background: safetyCheck ? 'rgba(0,177,106,0.2)' : 'rgba(255,79,40,0.2)', border: `1px solid ${safetyCheck ? '#00B16A' : '#FF4F28'}` }}>
+                         <h4 style={{ fontSize: '14px', margin: '0 0 4px', color: safetyCheck ? '#00B16A' : '#FF4F28', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {safetyCheck ? <CheckCircle size={16}/> : <AlertTriangle size={16}/>}
+                            {safetyCheck ? "선택한 알레르기 성분 안심" : "선택한 알레르기 성분 감지됨!"}
+                         </h4>
+                         <p style={{ fontSize: '12px', margin: 0, color: 'white' }}>
+                            {safetyCheck 
+                                ? "분석 결과, 선택하신 알레르기 유발 성분이 발견되지 않았습니다." 
+                                : "주의하세요! 음식이 선택하신 알레르기 성분을 포함하고 있을 수 있습니다."}
+                         </p>
+                    </div>
+                )}
+
                 <div style={{ marginBottom: '15px' }}>
                     <h4 style={{ fontSize: '14px', color: '#aaa', marginBottom: '5px' }}>주요 재료</h4>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
@@ -220,6 +251,39 @@ const ScanPage = () => {
                                     <strong>오류 발생</strong>
                                 </div>
                                 {error}
+                            </div>
+                        )}
+
+                        {/* Filter Selection (only when not analyzing and no result) */}
+                        {!isAnalyzing && !result && (
+                            <div style={{ marginTop: 'auto', marginBottom: '20px', width: '100%' }}>
+                                <p style={{ fontSize: '14px', color: '#ccc', marginBottom: '10px', textAlign: 'center' }}>
+                                    확인하고 싶은 알러지 성분을 선택하세요
+                                </p>
+                                <div className="no-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 4px' }}>
+                                    {allergensList.map(allergen => {
+                                        const isSelected = selectedAllergens.includes(allergen.id);
+                                        return (
+                                            <button 
+                                                key={allergen.id} 
+                                                onClick={() => toggleAllergen(allergen.id)}
+                                                style={{
+                                                    background: isSelected ? 'var(--primary-color)' : 'rgba(255,255,255,0.15)',
+                                                    color: 'white',
+                                                    border: isSelected ? '1px solid var(--primary-color)' : '1px solid rgba(255,255,255,0.3)',
+                                                    borderRadius: '20px',
+                                                    padding: '8px 16px',
+                                                    fontSize: '13px',
+                                                    whiteSpace: 'nowrap',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                {allergen.icon} {allergen.name}
+                                            </button>
+                                        )
+                                    })}
+                                </div>
                             </div>
                         )}
 
