@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom'
-import { Search, User, SlidersHorizontal, ShieldCheck, MapPin, Star, List, Heart, Bell, ChevronDown, Coffee, Utensils, Pizza, Carrot, Home, Camera } from 'lucide-react'
+import { Search, User, SlidersHorizontal, ShieldCheck, MapPin, Star, List, Heart, Bell, ChevronDown, Coffee, Utensils, Pizza, Carrot, Home, Camera, Bookmark } from 'lucide-react'
 import MapView from './MapView'
 import LoginPage from './LoginPage'
 import SearchPage from './SearchPage'
@@ -100,42 +100,49 @@ function HomePage() {
         <div className="home-container" style={{ paddingBottom: '2rem' }}>
             {/* 1. Header & Location */}
             <header style={{
-                padding: '1rem 1.25rem',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
+                padding: '1rem 1.25rem 0.5rem',
                 backgroundColor: 'var(--surface-color)',
                 position: 'sticky',
                 top: 0,
-                zIndex: 100
+                zIndex: 100,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                {/* Line 1: Logo, Search, Icons */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <img src="/logo.png" alt="AT" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+                    
+                    <div 
+                        onClick={() => navigate('/search')}
+                        style={{
+                            flex: 1,
+                            backgroundColor: 'var(--bg-color)',
+                            borderRadius: '8px',
+                            padding: '10px 12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            color: 'var(--text-tertiary)',
+                            cursor: 'pointer'
+                        }}>
+                        <Search size={16} />
+                        <span style={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>지역, 음식, 알러지 검색</span>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <Bookmark size={24} color="var(--text-primary)" onClick={() => navigate('/favorites')} style={{ cursor: 'pointer' }} />
+                        <Bell size={24} color="var(--text-primary)" style={{ cursor: 'pointer' }} />
+                    </div>
+                </div>
+
+                {/* Line 2: Location Selector */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', paddingBottom: '0.5rem' }}>
+                    <MapPin size={18} color="var(--text-primary)" style={{ marginRight: '2px' }}/>
                     <h2 style={{ fontSize: '20px' }}>서울시 강남구</h2>
                     <ChevronDown size={18} color="var(--text-primary)" />
                 </div>
-                <div style={{ display: 'flex', gap: '16px' }}>
-                    <Bell size={24} color="var(--text-primary)" />
-                </div>
             </header>
-
-            {/* 2. Search Bar */}
-            <div style={{ padding: '0 1.25rem 1rem', backgroundColor: 'var(--surface-color)' }}>
-                <div 
-                    onClick={() => navigate('/search')}
-                    style={{
-                    backgroundColor: 'var(--bg-color)',
-                    borderRadius: '8px',
-                    padding: '12px 16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    color: 'var(--text-tertiary)',
-                    cursor: 'pointer'
-                }}>
-                    <Search size={18} />
-                    <span style={{ fontSize: '14px' }}>지역, 음식, 알러지 검색</span>
-                </div>
-            </div>
 
             {/* 3. Category Bar */}
             <div className="no-scrollbar" style={{
