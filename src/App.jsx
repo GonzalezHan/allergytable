@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate, useLocat
 import { Search, User, SlidersHorizontal, ShieldCheck, MapPin, Star, List, Heart, Bell, ChevronDown, Coffee, Utensils, Pizza, Carrot } from 'lucide-react'
 import MapView from './MapView'
 import LoginPage from './LoginPage'
+import SearchPage from './SearchPage'
 import AllergyProfileSetup from './AllergyProfileSetup'
 import FavoritesPage from './FavoritesPage'
 import RestaurantDetail from './RestaurantDetail'
@@ -116,14 +117,17 @@ function HomePage() {
 
             {/* 2. Search Bar */}
             <div style={{ padding: '0 1.25rem 1rem', backgroundColor: 'var(--surface-color)' }}>
-                <div style={{
+                <div 
+                    onClick={() => navigate('/search')}
+                    style={{
                     backgroundColor: 'var(--bg-color)',
                     borderRadius: '8px',
                     padding: '12px 16px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    color: 'var(--text-tertiary)'
+                    color: 'var(--text-tertiary)',
+                    cursor: 'pointer'
                 }}>
                     <Search size={18} />
                     <span style={{ fontSize: '14px' }}>지역, 음식, 알러지 검색</span>
@@ -260,6 +264,7 @@ function App() {
                 <div className="app-shell">
                     <Routes>
                         <Route path="/login" element={<LoginPage />} />
+                        <Route path="/search" element={<RequireAuth allowGuest={true}><SearchPage /></RequireAuth>} />
                         <Route path="/" element={<RequireAuth allowGuest={true}><HomePage /></RequireAuth>} />
                         <Route path="/favorites" element={<RequireAuth><FavoritesPageWrapper /></RequireAuth>} />
                         <Route path="/profile" element={<RequireAuth><ProfilePageWrapper /></RequireAuth>} />
