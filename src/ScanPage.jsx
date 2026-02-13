@@ -154,10 +154,26 @@ const ScanPage = () => {
 
         // --- Visualization Logic ---
         
-        // 1. Check Specific Selected Allergens
+        // 1. Synonyms for better matching
+        const allergenAliases = {
+            'dairy': ['우유', '치즈', '버터', '크림', '요거트', '유제품', 'milk', 'cheese'],
+            'egg': ['계란', '달걀', '난류', 'egg'],
+            'peanut': ['땅콩', 'peanut'],
+            'wheat': ['밀', '글루텐', 'wheat', 'bread', 'flour'],
+            'soy': ['대두', '콩', '두유', '두부', 'soy'],
+            'shellfish': ['갑각류', '새우', '게', '랍스터', '조개', 'shellfish', 'shrimp', 'crab']
+        };
+
+        // 2. Check Specific Selected Allergens
         const userRiskDetails = selectedAllergens.map(id => {
             const allergenName = allergensList.find(a => a.id === id)?.name;
-            const isDetected = parsedData.allergens?.some(a => a.includes(allergenName));
+            const aliases = allergenAliases[id] || [allergenName];
+            
+            // Check if any alias is present in the detected allergens list (string matching)
+            const isDetected = parsedData.allergens?.some(detectedItem => 
+                aliases.some(alias => detectedItem.includes(alias))
+            );
+            
             return { id, name: allergenName, detected: isDetected };
         });
 
@@ -181,37 +197,35 @@ const ScanPage = () => {
                 borderRadius: '24px', 
                 border: '1px solid rgba(255,255,255,0.1)', 
                 width: '90%', 
-                margin: '0 auto',
+                margin: '0 auto 40px', // Add bottom margin for scrolling
                 boxShadow: '0 10px 40px rgba(0,0,0,0.5)'
             }}>
-                <h3 style={{ margin: '0 0 20px', fontSize: '22px', fontWeight: 700, color: 'white', textAlign: 'center' }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '20px', fontWeight: 700, color: 'white', textAlign: 'center' }}>
                     {parsedData.menu || "음식 분석 결과"}
                 </h3>
 
-                {/* Risk Gauge Visualization */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px' }}>
-                    <div style={{ 
-                        width: '120px', height: '120px', borderRadius: '50%', 
-                        border: `8px solid ${riskColor}`,
-                        display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-                        background: `conic-gradient(${riskColor} ${riskScore}%, #333 ${riskScore}%)`, // Simple conic visual
-                        position: 'relative',
-                        marginBottom: '12px'
-                    }}>
-                        <div style={{ 
-                            position: 'absolute', inset: '8px', background: '#1a1a1a', borderRadius: '50%', 
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
-                        }}>
-                             <span style={{ fontSize: '32px', fontWeight: 800, color: riskColor }}>{riskScore}</span>
-                             <span style={{ fontSize: '12px', color: '#aaa', marginTop: '-4px' }}>위험도</span>
+                {/* Compact Risk Meter (Horizontal Bar) */}
+                <div style={{ marginBottom: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '14px', color: '#ccc' }}>위험도</span>
+                        <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '24px', fontWeight: 800, color: riskColor, marginRight: '6px' }}>{riskScore}</span>
+                            <span style={{ fontSize: '14px', fontWeight: 700, color: riskColor, padding: '2px 8px', borderRadius: '12px', background: `${riskColor}20` }}>
+                                {riskLabel} 단계
+                            </span>
                         </div>
                     </div>
-                    <span style={{ 
-                        fontSize: '16px', fontWeight: 700, color: riskColor, 
-                        padding: '6px 16px', borderRadius: '20px', background: `${riskColor}20` 
-                    }}>
-                        {riskLabel} 단계
-                    </span>
+                    {/* Progress Bar Track */}
+                    <div style={{ width: '100%', height: '12px', background: '#333', borderRadius: '6px', overflow: 'hidden', position: 'relative' }}>
+                        {/* Progress Bar Fill */}
+                        <div style={{ 
+                            width: `${riskScore}%`, 
+                            height: '100%', 
+                            background: `linear-gradient(90deg, ${riskColor}, ${riskColor})`,
+                            borderRadius: '6px',
+                            transition: 'width 1s ease-out'
+                        }}></div>
+                    </div>
                 </div>
 
                 {/* Selected Allergen Check */}
@@ -279,7 +293,7 @@ const ScanPage = () => {
             <div style={{ 
                 position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10, 
                 padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)'
+                background: 'linear-gradient(to bottom, rgba(0,0,0,0.9), transparent)'
             }}>
                 <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
                     <ChevronLeft size={28} />
@@ -288,20 +302,31 @@ const ScanPage = () => {
                 <div style={{ width: '28px' }}></div> {/* Spacer */}
             </div>
 
-            {/* Main Content */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', width: '100%' }}>
+            {/* Main Content (Scrollable) */}
+            <div style={{ 
+                flex: 1, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                position: 'relative', 
+                width: '100%',
+                overflowY: 'auto', // Enable vertical scrolling
+                paddingTop: '60px' // Space for header
+            }}>
                 
                 {imgSrc ? (
                     // Image Preview & Result
-                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', boxSizing: 'border-box' }}>
+                    <div style={{ width: '100%', minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', boxSizing: 'border-box' }}>
                         <div style={{ 
                             position: 'relative', 
                             width: '100%', 
-                            maxHeight: result ? '40vh' : '60vh', 
+                            height: 'auto',
+                            maxHeight: '50vh', // Limit image height
                             borderRadius: '20px', 
                             overflow: 'hidden', 
                             boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                            transition: 'all 0.3s ease'
+                            transition: 'all 0.3s ease',
+                            flexShrink: 0 // Prevent image from squishing
                         }}>
                             <img src={imgSrc} alt="capture" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             {isAnalyzing && (
