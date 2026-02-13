@@ -64,32 +64,28 @@ const ScanPage = () => {
         setResult(null); // Clear previous result
 
         try {
-            const base64Image = imgSrc.split(',')[1];
+            const base64Image = imgSrc; // Tesseract accepts data URI directly
             let ocrText = "";
             let isTextMode = false;
 
-            // 1. Try OCR First (Cloud Vision)
+            // 1. Try OCR First (Tesseract.js - Client Side & Free)
             try {
-                const ocrResponse = await fetch('/api/ocr', {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        requests: [{
-                            image: { content: base64Image },
-                            features: [{ type: "TEXT_DETECTION" }]
-                        }]
-                    })
-                });
-
-                if (ocrResponse.ok) {
-                    const ocrData = await ocrResponse.json();
-                    const detections = ocrData.responses?.[0]?.textAnnotations;
-                    if (detections && detections.length > 0) {
-                        ocrText = detections[0].description;
-                        // Router Logic: If text detected is substantial (> 20 chars), use Text Mode
-                        if (ocrText.length > 30) {
-                            isTextMode = true;
-                        }
+                // Determine language based on browser or default to Korean+English
+                const { data: { text } } = await Tesseract.recognize(
+                    base64Image,
+                    'kor+eng', 
+                    { 
+                        logger: m => console.log(m) // Optional logger
+                    }
+                );
+                
+                if (text && text.trim().length > 0) {
+                    ocrText = text;
+                    // Router Logic: If significant text detected (> 20 chars), use Text Mode
+                    // Clean up newlines for better length check
+                    const cleanText = text.replace(/\s+/g, '').trim();
+                    if (cleanText.length > 20) {
+                        isTextMode = true;
                     }
                 }
             } catch (ocrErr) {
@@ -135,6 +131,8 @@ const ScanPage = () => {
                 // --- Image Mode (Kanana-o Visual Analysis) ---
                 console.log("Image Mode Activated");
 
+                const base64Content = imgSrc.split(',')[1];
+
                 // Construct Prompt based on selected allergens
                 let promptText = "이 음식 사진을 분석해서 다음 정보를 JSON 포맷으로 정리해줘.\n\n" +
                     "{\n" +
@@ -162,7 +160,7 @@ const ScanPage = () => {
                             {
                                 role: "user",
                                 content: [
-                                    { type: "image_url", image_url: { url: base64Image } },
+                                    { type: "image_url", image_url: { url: base64Content } },
                                     { type: "text", text: promptText }
                                 ]
                             }
