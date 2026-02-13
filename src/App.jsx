@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom'
-import { Search, User, SlidersHorizontal, ShieldCheck, MapPin, Star, List, Heart, Bell, ChevronDown, Coffee, Utensils, Pizza, Carrot } from 'lucide-react'
+import { Search, User, SlidersHorizontal, ShieldCheck, MapPin, Star, List, Heart, Bell, ChevronDown, Coffee, Utensils, Pizza, Carrot, Home, Camera } from 'lucide-react'
 import MapView from './MapView'
 import LoginPage from './LoginPage'
 import SearchPage from './SearchPage'
+import ScanPage from './ScanPage'
 import AllergyProfileSetup from './AllergyProfileSetup'
 import FavoritesPage from './FavoritesPage'
 import RestaurantDetail from './RestaurantDetail'
@@ -37,11 +38,13 @@ function BottomNav() {
     const location = useLocation();
 
     // Hide on login page and restaurant detail page
-    if (location.pathname === '/login' || location.pathname.startsWith('/restaurant/') || location.pathname === '/reservation-success' || location.pathname === '/map') return null;
+    if (location.pathname === '/login' || location.pathname.startsWith('/restaurant/') || location.pathname === '/reservation-success') return null;
 
     const navItems = [
-        { path: '/', icon: <Search size={24} />, label: '검색' },
-        { path: '/favorites', icon: <Star size={24} />, label: '저장' }, // Changed Icon to Star for 'Saved' vibe
+        { path: '/', icon: <Home size={24} />, label: '홈' },
+        { path: '/favorites', icon: <Star size={24} />, label: '저장' },
+        { path: '/scan', icon: <Camera size={24} />, label: '촬영' },
+        { path: '/map', icon: <MapPin size={24} />, label: '내주변' },
         { path: '/profile', icon: <User size={24} />, label: '마이' },
     ];
 
@@ -267,6 +270,7 @@ function App() {
                         <Route path="/search" element={<RequireAuth allowGuest={true}><SearchPage /></RequireAuth>} />
                         <Route path="/" element={<RequireAuth allowGuest={true}><HomePage /></RequireAuth>} />
                         <Route path="/favorites" element={<RequireAuth><FavoritesPageWrapper /></RequireAuth>} />
+                        <Route path="/scan" element={<RequireAuth allowGuest={true}><ScanPage /></RequireAuth>} />
                         <Route path="/profile" element={<RequireAuth><ProfilePageWrapper /></RequireAuth>} />
                         <Route path="/restaurant/:id" element={<RequireAuth allowGuest={true}><RestaurantDetailWrapper /></RequireAuth>} />
                         <Route path="/reservation-success" element={<RequireAuth allowGuest={true}><ReservationSuccess /></RequireAuth>} />
