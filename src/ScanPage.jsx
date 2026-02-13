@@ -69,11 +69,20 @@ const ScanPage = () => {
             const base64Image = imgSrc.split(',')[1];
 
             // Construct Prompt based on selected allergens
-            let promptText = "이 음식 사진을 분석해서 1. 메뉴 이름, 2. 주요 재료, 3. 알레르기 유발 가능 성분을 알려줘. 응답은 반드시 JSON 형식으로 해줘. 예시: {\"menu\": \"이름\", \"ingredients\": [\"재료1\", \"재료2\"], \"allergens\": [\"알러지1\"]}";
+            let promptText = "이 음식 사진을 분석해서 다음 정보를 JSON 포맷으로 정리해줘.\n\n" +
+                "{\n" +
+                "  \"menu\": \"추정되는 메뉴 이름\",\n" +
+                "  \"ingredients\": [\"주요 재료1\", \"주요 재료2\"],\n" +
+                "  \"allergens\": [\"발견된 알레르기 성분1\", \"발견된 알레르기 성분2\"],\n" +
+                "  \"risk_score\": 0~100 사이의 위험도 숫자 (0: 안전, 100: 매우 위험)\n" +
+                "}\n\n" +
+                "**주의사항:**\n" +
+                "1. 앞뒤에 사족이나 설명 없이 **오직 JSON 코드만** 출력해.\n" +
+                "2. 알레르기 성분은 [계란, 우유, 땅콩, 견과류, 밀, 대두, 갑각류, 생선] 중에서 식별해줘.\n";
             
             if (selectedAllergens.length > 0) {
                 const selectedNames = selectedAllergens.map(id => allergensList.find(a => a.id === id)?.name).join(', ');
-                promptText += `\n특히 다음 알레르기 성분이 포함되어 있는지 **중점적으로 확인**해줘: [${selectedNames}]. 만약 해당 성분이 조금이라도 의심되면 allergens 리스트에 반드시 포함시켜줘.`;
+                promptText += `3. 특히 사용자에게 [${selectedNames}] 알러지가 있어. 이 성분이 포함될 가능성이 있다면 'allergens'에 반드시 포함하고 'risk_score'를 높게 잡아줘.`;
             }
 
             // Call our Cloudflare Function proxy (or local proxy via Vite)
@@ -120,7 +129,7 @@ const ScanPage = () => {
         
         let parsedData = null;
         try {
-             // Try to find JSON block
+             // Try to find JSON block first (sometimes models wrap in ```json ... ```)
             const jsonMatch = result.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 parsedData = JSON.parse(jsonMatch[0]);
@@ -128,61 +137,129 @@ const ScanPage = () => {
                 parsedData = JSON.parse(result);
             }
         } catch (e) {
-            // Text fallback
-            return (
-                 <div className="analysis-card" style={{ background: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '16px', backdropFilter: 'blur(10px)', width: '100%' }}>
-                    <h3 style={{ margin: '0 0 10px', fontSize: '18px', color: '#FF4F28' }}>분석 결과</h3>
-                    <div style={{ whiteSpace: 'pre-wrap', fontSize: '14px', lineHeight: '1.5' }}>{result}</div>
+            console.error("JSON Parse Error:", e);
+        }
+
+        // Fallback for failed parsing (Text Mode)
+        if (!parsedData) {
+             return (
+                 <div className="analysis-card" style={{ background: 'rgba(20,20,20,0.9)', padding: '24px', borderRadius: '24px', border: '1px solid #333', width: '90%', margin: '0 auto' }}>
+                    <h3 style={{ margin: '0 0 12px', fontSize: '18px', color: '#FF4F28', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <AlertTriangle size={18} /> 분석 결과 (텍스트)
+                    </h3>
+                    <div style={{ whiteSpace: 'pre-wrap', fontSize: '14px', lineHeight: '1.6', color: '#eee' }}>{result}</div>
                 </div>
             );
         }
 
-        // Highlight detected allergens that match selected filter
-        const safetyCheck = selectedAllergens.every(id => 
-            !parsedData.allergens?.some(a => a.includes(allergensList.find(al => al.id === id)?.name))
-        );
+        // --- Visualization Logic ---
+        
+        // 1. Check Specific Selected Allergens
+        const userRiskDetails = selectedAllergens.map(id => {
+            const allergenName = allergensList.find(a => a.id === id)?.name;
+            const isDetected = parsedData.allergens?.some(a => a.includes(allergenName));
+            return { id, name: allergenName, detected: isDetected };
+        });
+
+        const hasDetectedSelected = userRiskDetails.some(r => r.detected);
+        const riskScore = parsedData.risk_score || (hasDetectedSelected ? 90 : 10);
+        
+        let riskColor = '#00B16A'; // Green
+        let riskLabel = '안심';
+        if (riskScore >= 70) {
+            riskColor = '#FF4F28'; // Red
+            riskLabel = '위험';
+        } else if (riskScore >= 40) {
+            riskColor = '#FFB900'; // Yellow
+            riskLabel = '주의';
+        }
 
         return (
-            <div className="analysis-card" style={{ background: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '16px', backdropFilter: 'blur(10px)', width: '100%' }}>
-                <h3 style={{ margin: '0 0 10px', fontSize: '20px', color: '#FF4F28' }}>{parsedData.menu || "음식 분석 결과"}</h3>
-                
+            <div className="analysis-card" style={{ 
+                background: 'rgba(20,20,20,0.95)', 
+                padding: '24px', 
+                borderRadius: '24px', 
+                border: '1px solid rgba(255,255,255,0.1)', 
+                width: '90%', 
+                margin: '0 auto',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.5)'
+            }}>
+                <h3 style={{ margin: '0 0 20px', fontSize: '22px', fontWeight: 700, color: 'white', textAlign: 'center' }}>
+                    {parsedData.menu || "음식 분석 결과"}
+                </h3>
+
+                {/* Risk Gauge Visualization */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px' }}>
+                    <div style={{ 
+                        width: '120px', height: '120px', borderRadius: '50%', 
+                        border: `8px solid ${riskColor}`,
+                        display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+                        background: `conic-gradient(${riskColor} ${riskScore}%, #333 ${riskScore}%)`, // Simple conic visual
+                        position: 'relative',
+                        marginBottom: '12px'
+                    }}>
+                        <div style={{ 
+                            position: 'absolute', inset: '8px', background: '#1a1a1a', borderRadius: '50%', 
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                             <span style={{ fontSize: '32px', fontWeight: 800, color: riskColor }}>{riskScore}</span>
+                             <span style={{ fontSize: '12px', color: '#aaa', marginTop: '-4px' }}>위험도</span>
+                        </div>
+                    </div>
+                    <span style={{ 
+                        fontSize: '16px', fontWeight: 700, color: riskColor, 
+                        padding: '6px 16px', borderRadius: '20px', background: `${riskColor}20` 
+                    }}>
+                        {riskLabel} 단계
+                    </span>
+                </div>
+
+                {/* Selected Allergen Check */}
                 {selectedAllergens.length > 0 && (
-                    <div style={{ marginBottom: '15px', padding: '10px', borderRadius: '8px', background: safetyCheck ? 'rgba(0,177,106,0.2)' : 'rgba(255,79,40,0.2)', border: `1px solid ${safetyCheck ? '#00B16A' : '#FF4F28'}` }}>
-                         <h4 style={{ fontSize: '14px', margin: '0 0 4px', color: safetyCheck ? '#00B16A' : '#FF4F28', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {safetyCheck ? <CheckCircle size={16}/> : <AlertTriangle size={16}/>}
-                            {safetyCheck ? "선택한 알레르기 성분 안심" : "선택한 알레르기 성분 감지됨!"}
-                         </h4>
-                         <p style={{ fontSize: '12px', margin: 0, color: 'white' }}>
-                            {safetyCheck 
-                                ? "분석 결과, 선택하신 알레르기 유발 성분이 발견되지 않았습니다." 
-                                : "주의하세요! 음식이 선택하신 알레르기 성분을 포함하고 있을 수 있습니다."}
-                         </p>
+                    <div style={{ marginBottom: '20px', background: '#252525', padding: '16px', borderRadius: '16px' }}>
+                        <h4 style={{ fontSize: '13px', color: '#aaa', margin: '0 0 10px' }}>선택한 알러지 체크</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {userRiskDetails.map(item => (
+                                <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '14px' }}>
+                                    <span style={{ color: 'white' }}>{item.name}</span>
+                                    {item.detected ? (
+                                        <span style={{ color: '#FF4F28', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <AlertTriangle size={14}/> 감지됨
+                                        </span>
+                                    ) : (
+                                        <span style={{ color: '#00B16A', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <CheckCircle size={14}/> 불검출
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 
-                <div style={{ marginBottom: '15px' }}>
-                    <h4 style={{ fontSize: '14px', color: '#aaa', marginBottom: '5px' }}>주요 재료</h4>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {parsedData.ingredients?.map((ing, i) => (
-                            <span key={i} style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 8px', borderRadius: '4px', fontSize: '13px' }}>{ing}</span>
-                        ))}
-                    </div>
-                </div>
-
-                <div>
-                    <h4 style={{ fontSize: '14px', color: '#aaa', marginBottom: '5px' }}>⚠️ 알레르기 주의</h4>
-                    {parsedData.allergens?.length > 0 ? (
+                {/* Ingredients & Allergens List */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                        <h4 style={{ fontSize: '13px', color: '#aaa', margin: '0 0 8px' }}>주요 재료</h4>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                            {parsedData.allergens.map((alg, i) => (
-                                <span key={i} style={{ background: 'rgba(255, 79, 40, 0.2)', color: '#FF4F28', border: '1px solid #FF4F28', padding: '4px 8px', borderRadius: '4px', fontSize: '13px', fontWeight: 'bold' }}>{alg}</span>
+                            {parsedData.ingredients?.map((ing, i) => (
+                                <span key={i} style={{ background: '#333', color: '#eee', padding: '6px 12px', borderRadius: '8px', fontSize: '13px' }}>{ing}</span>
                             ))}
                         </div>
-                    ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#00B16A' }}>
-                            <CheckCircle size={16} />
-                            <span>감지된 알레르기 성분이 없습니다.</span>
-                        </div>
-                    )}
+                    </div>
+
+                    <div>
+                        <h4 style={{ fontSize: '13px', color: '#aaa', margin: '0 0 8px' }}>발견된 알레르기 성분</h4>
+                         {parsedData.allergens?.length > 0 ? (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                {parsedData.allergens.map((alg, i) => (
+                                    <span key={i} style={{ background: 'rgba(255, 79, 40, 0.15)', color: '#FF4F28', border: '1px solid rgba(255, 79, 40, 0.3)', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}>{alg}</span>
+                                ))}
+                            </div>
+                        ) : (
+                            <span style={{ fontSize: '13px', color: '#aaa' }}>특이사항 없음</span>
+                        )}
+                    </div>
                 </div>
             </div>
         );
