@@ -266,7 +266,7 @@ const ScanPage = () => {
                                 <p style={{ fontSize: '14px', color: '#ccc', marginBottom: '10px', textAlign: 'center' }}>
                                     확인하고 싶은 알러지 성분을 선택하세요
                                 </p>
-                                <div className="no-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '0 4px' }}>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px', padding: '0 4px' }}>
                                     {allergensList.map(allergen => {
                                         const isSelected = selectedAllergens.includes(allergen.id);
                                         return (
