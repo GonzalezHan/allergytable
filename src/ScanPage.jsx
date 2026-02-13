@@ -1,9 +1,158 @@
-import React from 'react';
-import { Camera, Image, X } from 'lucide-react';
+import React, { useState, useRef, useCallback } from 'react';
+import Webcam from 'react-webcam';
+import { Camera, Image as ImageIcon, X, Zap, RefreshCw, ChevronLeft, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ScanPage = () => {
     const navigate = useNavigate();
+    const webcamRef = useRef(null);
+    const fileInputRef = useRef(null);
+    
+    // State
+    const [imgSrc, setImgSrc] = useState(null);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [result, setResult] = useState(null);
+    const [error, setError] = useState(null);
+    const [facingMode, setFacingMode] = useState("environment");
+
+    // Capture from Webcam
+    const capture = useCallback(() => {
+        const imageSrc = webcamRef.current.getScreenshot();
+        setImgSrc(imageSrc);
+    }, [webcamRef]);
+
+    // Handle File Upload
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImgSrc(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Toggle Camera
+    const toggleCamera = () => {
+        setFacingMode(prev => prev === "user" ? "environment" : "user");
+    };
+
+    // Reset
+    const handleRetake = () => {
+        setImgSrc(null);
+        setResult(null);
+        setError(null);
+    };
+
+    // API Call
+    const handleAnalyze = async () => {
+        if (!imgSrc) return;
+
+        setIsAnalyzing(true);
+        setError(null);
+
+        try {
+            // Document says: "The API accepts image and audio inputs in Base64-encoded format."
+            // Py example uses raw base64 string.
+            // imgSrc is "data:image/jpeg;base64,....". We need to strip the prefix.
+            const base64Image = imgSrc.split(',')[1];
+
+            const API_KEY = "KC_IS_yDMcsmjvBNHuPt7BZyUVooP0NQnZGUCqxHB2wyvX6xWHCdPxJV2RHHVAAE7044YH";
+            const API_BASE_URL = "https://kanana-o.a2s-endpoint.kr-central-2.kakaocloud.com/v1"; 
+
+            const response = await fetch(`${API_BASE_URL}/chat/completions`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: "kanana-o",
+                    messages: [
+                        {
+                            role: "user",
+                            content: [
+                                { type: "image_url", image_url: { url: base64Image } },
+                                { type: "text", text: "이 음식 사진을 분석해서 1. 메뉴 이름, 2. 주요 재료, 3. 알레르기 유발 가능 성분을 알려줘. 응답은 반드시 JSON 형식으로 해줘. 예시: {\"menu\": \"이름\", \"ingredients\": [\"재료1\", \"재료2\"], \"allergens\": [\"알러지1\"]}" }
+                            ]
+                        }
+                    ],
+                    max_tokens: 1000 // Adequate for JSON response
+                })
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`API Error: ${response.status} - ${errText}`);
+            }
+
+            const data = await response.json();
+            const content = data.choices[0].message.content;
+            setResult(content);
+
+        } catch (err) {
+            console.error("Analysis Failed:", err);
+            setError(`분석 실패: ${err.message}`);
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
+
+    // Helper to format result text (simplistic JSON parser or text renderer)
+    const renderResult = () => {
+        if (!result) return null;
+        
+        let parsedData = null;
+        try {
+             // Try to find JSON block
+            const jsonMatch = result.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                parsedData = JSON.parse(jsonMatch[0]);
+            } else {
+                parsedData = JSON.parse(result);
+            }
+        } catch (e) {
+            // Text fallback
+            return (
+                 <div className="analysis-card" style={{ background: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '16px', backdropFilter: 'blur(10px)', width: '100%' }}>
+                    <h3 style={{ margin: '0 0 10px', fontSize: '18px', color: '#FF4F28' }}>분석 결과</h3>
+                    <div style={{ whiteSpace: 'pre-wrap', fontSize: '14px', lineHeight: '1.5' }}>{result}</div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="analysis-card" style={{ background: 'rgba(255,255,255,0.1)', padding: '20px', borderRadius: '16px', backdropFilter: 'blur(10px)', width: '100%' }}>
+                <h3 style={{ margin: '0 0 10px', fontSize: '20px', color: '#FF4F28' }}>{parsedData.menu || "음식 분석 결과"}</h3>
+                
+                <div style={{ marginBottom: '15px' }}>
+                    <h4 style={{ fontSize: '14px', color: '#aaa', marginBottom: '5px' }}>주요 재료</h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {parsedData.ingredients?.map((ing, i) => (
+                            <span key={i} style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 8px', borderRadius: '4px', fontSize: '13px' }}>{ing}</span>
+                        ))}
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style={{ fontSize: '14px', color: '#aaa', marginBottom: '5px' }}>⚠️ 알레르기 주의</h4>
+                    {parsedData.allergens?.length > 0 ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                            {parsedData.allergens.map((alg, i) => (
+                                <span key={i} style={{ background: 'rgba(255, 79, 40, 0.2)', color: '#FF4F28', border: '1px solid #FF4F28', padding: '4px 8px', borderRadius: '4px', fontSize: '13px', fontWeight: 'bold' }}>{alg}</span>
+                            ))}
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#00B16A' }}>
+                            <CheckCircle size={16} />
+                            <span>감지된 알레르기 성분이 없습니다.</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div className="scan-page-container" style={{ 
@@ -12,74 +161,145 @@ const ScanPage = () => {
             color: 'white',
             display: 'flex', 
             flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            position: 'relative'
+            position: 'relative',
+            overflow: 'hidden'
         }}>
-            <button 
-                onClick={() => navigate(-1)} 
-                style={{
-                    position: 'absolute',
-                    top: '20px',
-                    left: '20px',
-                    background: 'rgba(255,255,255,0.2)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    padding: '8px',
-                    cursor: 'pointer',
-                    color: 'white'
-                }}
-            >
-                <X size={24} />
-            </button>
-
-            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                <h2 style={{ marginBottom: '10px' }}>성분표를 찍어보세요</h2>
-                <p style={{ color: '#ccc', fontSize: '14px' }}>알러지 유발 성분을 자동으로 분석해드려요</p>
-            </div>
-
+            {/* Header */}
             <div style={{ 
-                width: '80%', 
-                aspectRatio: '1/1', 
-                border: '2px dashed rgba(255,255,255,0.5)', 
-                borderRadius: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '40px'
+                position: 'fixed', top: 0, left: 0, right: 0, zIndex: 10, 
+                padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                background: 'linear-gradient(to bottom, rgba(0,0,0,0.7), transparent)'
             }}>
-                <Camera size={48} color="rgba(255,255,255,0.5)" />
+                <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
+                    <ChevronLeft size={28} />
+                </button>
+                <span style={{ fontWeight: 600 }}>Food Lens</span>
+                <div style={{ width: '28px' }}></div> {/* Spacer */}
             </div>
 
-            <div style={{ display: 'flex', gap: '40px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ 
-                        width: '60px', 
-                        height: '60px', 
-                        borderRadius: '50%', 
-                        background: 'white',
-                        border: '4px solid rgba(255,255,255,0.3)',
-                        cursor: 'pointer'
-                    }}></div>
-                    <span style={{ fontSize: '12px' }}>촬영</span>
-                </div>
+            {/* Main Content */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', width: '100%' }}>
                 
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ 
-                        width: '60px', 
-                        height: '60px', 
-                        borderRadius: '50%', 
-                        background: 'rgba(255,255,255,0.2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer'
-                    }}>
-                        <Image size={24} />
+                {imgSrc ? (
+                    // Image Preview & Result
+                    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', boxSizing: 'border-box' }}>
+                        <div style={{ 
+                            position: 'relative', 
+                            width: '100%', 
+                            maxHeight: result ? '40vh' : '60vh', 
+                            borderRadius: '20px', 
+                            overflow: 'hidden', 
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                            transition: 'all 0.3s ease'
+                        }}>
+                            <img src={imgSrc} alt="capture" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            {isAnalyzing && (
+                                <div style={{ 
+                                    position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', 
+                                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                    color: 'white'
+                                }}>
+                                    <div className="spinner" style={{ 
+                                        width: '40px', height: '40px', border: '3px solid rgba(255,255,255,0.3)', 
+                                        borderTopColor: '#FF4F28', borderRadius: '50%', animation: 'spin 1s linear infinite' 
+                                    }}></div>
+                                    <p style={{ marginTop: '16px', fontWeight: 500 }}>AI가 분석중입니다...</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Result Display */}
+                        {result && (
+                            <div style={{ marginTop: '20px', width: '100%', animation: 'slideUp 0.3s ease-out' }}>
+                                {renderResult()}
+                            </div>
+                        )}
+                        
+                        {/* Error Display */}
+                        {error && (
+                            <div style={{ marginTop: '20px', width: '100%', padding: '12px', background: 'rgba(255, 59, 48, 0.15)', border: '1px solid #FF3B30', borderRadius: '8px', color: '#FF3B30', fontSize: '13px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                    <AlertTriangle size={16} />
+                                    <strong>오류 발생</strong>
+                                </div>
+                                {error}
+                            </div>
+                        )}
+
+                        {/* Actions */}
+                        {!isAnalyzing && (
+                            <div style={{ display: 'flex', gap: '16px', marginTop: '24px', width: '100%' }}>
+                                <button onClick={handleRetake} style={{ flex: 1, padding: '14px', borderRadius: '12px', background: '#333', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' }}>
+                                    다시 찍기
+                                </button>
+                                {!result && (
+                                    <button onClick={handleAnalyze} style={{ flex: 1, padding: '14px', borderRadius: '12px', background: '#FF4F28', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                        <Zap size={18} fill="white" /> 분석하기
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
-                    <span style={{ fontSize: '12px' }}>앨범</span>
-                </div>
+                ) : (
+                    // Camera View
+                    <>
+                        <Webcam
+                            audio={false}
+                            ref={webcamRef}
+                            screenshotFormat="image/jpeg"
+                            videoConstraints={{ facingMode }}
+                            style={{ 
+                                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' 
+                            }}
+                        />
+                        
+                        {/* Overlay Controls */}
+                        <div style={{ 
+                            position: 'absolute', bottom: 0, left: 0, right: 0, 
+                            padding: '40px 20px 60px', 
+                            background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+                            display: 'flex', justifyContent: 'space-around', alignItems: 'center'
+                        }}>
+                            {/* Gallery */}
+                            <div onClick={() => fileInputRef.current.click()} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <ImageIcon size={24} />
+                                </div>
+                                <span style={{ fontSize: '12px' }}>앨범</span>
+                            </div>
+                            <input 
+                                type="file" 
+                                ref={fileInputRef} 
+                                onChange={handleFileChange} 
+                                accept="image/*" 
+                                style={{ display: 'none' }} 
+                            />
+
+                            {/* Shutter */}
+                            <div onClick={capture} style={{ 
+                                width: '72px', height: '72px', borderRadius: '50%', background: 'white',
+                                border: '4px solid rgba(255,255,255,0.3)', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                <div style={{ width: '64px', height: '64px', borderRadius: '50%', border: '2px solid #000' }}></div>
+                            </div>
+
+                            {/* Rotate */}
+                            <div onClick={toggleCamera} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <RefreshCw size={24} />
+                                </div>
+                                <span style={{ fontSize: '12px' }}>전환</span>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
+            
+            <style>{`
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            `}</style>
         </div>
     );
 };

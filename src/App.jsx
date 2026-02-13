@@ -37,8 +37,8 @@ function BottomNav() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Hide on login page and restaurant detail page
-    if (location.pathname === '/login' || location.pathname.startsWith('/restaurant/') || location.pathname === '/reservation-success') return null;
+    // Hide on login page, restaurant detail page, reservation success, and scan page
+    if (location.pathname === '/login' || location.pathname.startsWith('/restaurant/') || location.pathname === '/reservation-success' || location.pathname === '/scan') return null;
 
     const navItems = [
         { path: '/', icon: <Home size={24} />, label: '홈' },
