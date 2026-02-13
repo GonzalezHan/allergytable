@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Map, MapMarker, CustomOverlayMap, useKakaoLoader } from 'react-kakao-maps-sdk'
-import { ChevronLeft, Star, Crosshair, Check } from 'lucide-react'
+import { ChevronLeft, Search, Menu, Crosshair, List, Star, Check } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { allergensList } from './data'
 import './index.css'
@@ -13,7 +13,7 @@ const MapView = ({ restaurants = [] }) => {
         isPanto: false,
     });
     const [myLocation, setMyLocation] = useState(null);
-    const [selectedFilters, setSelectedFilters] = useState([]); // Array of allergen IDs
+    const [selectedFilters, setSelectedFilters] = useState([]);
 
     // Modern SDK loading
     const { loading: sdkLoading, error: sdkError } = useKakaoLoader({
@@ -31,11 +31,10 @@ const MapView = ({ restaurants = [] }) => {
                         lng: position.coords.longitude,
                     };
                     setMyLocation(newPos);
-                    setState({ center: newPos, isPanto: true }); // Smooth move to user
+                    setState({ center: newPos, isPanto: true });
                 },
                 (err) => {
                     console.error("Geolocation failed:", err);
-                    // Optional: Show toast or alert
                 }
             );
         }
@@ -45,7 +44,7 @@ const MapView = ({ restaurants = [] }) => {
         if (myLocation) {
             setState({ center: myLocation, isPanto: true });
         } else {
-            alert("현재 위치를 가져올 수 없습니다.");
+            alert("위치 정보를 가져올 수 없습니다.");
         }
     };
 
@@ -55,56 +54,82 @@ const MapView = ({ restaurants = [] }) => {
                 ? prev.filter(f => f !== id) 
                 : [...prev, id]
         );
-        setSelectedId(null); // Close info window when filtering
+        setSelectedId(null);
     };
 
-    // Filter Logic: Show restaurant IF it is safe for ALL selected filters
     const filteredRestaurants = restaurants.filter(res => {
         if (selectedFilters.length === 0) return true;
-        // Check if restaurant is safe for ALL selected allergens
-        // res.safeFor must include EVERY item in selectedFilters
         return selectedFilters.every(filterId => res.safeFor.includes(filterId));
     });
 
-    if (sdkLoading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>지도를 불러오는 중...</div>;
-    if (sdkError) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>지도 로딩 중 오류가 발생했습니다.</div>;
+    if (sdkLoading) return <div className="loading-container">지도를 불러오는 중...</div>;
+    if (sdkError) return <div className="loading-container">지도 로딩 중 오류가 발생했습니다.</div>;
 
     return (
-        <div className="map-page" style={{ height: '100vh', width: '100%', position: 'relative' }}>
-            {/* 1. Header */}
-            <header style={{
+        <div className="map-page" style={{ height: '100vh', width: '100%', position: 'relative', overflow: 'hidden' }}>
+            
+            {/* --- 1. Top Layer (Search & Filters) --- */}
+            <div style={{
                 position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
+                top: 0, left: 0, right: 0,
                 zIndex: 20,
-                padding: '16px',
+                padding: '16px 16px 0 16px',
                 display: 'flex',
-                alignItems: 'center',
+                flexDirection: 'column',
                 gap: '12px',
-                background: 'linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,255,255,0))',
-                pointerEvents: 'none' // Allow clicks to pass through transparent parts
+                pointerEvents: 'none' // Let clicks pass through empty areas
             }}>
-                <button onClick={() => navigate(-1)} style={{ 
-                    pointerEvents: 'auto', border: 'none', background: 'white', 
-                    borderRadius: '50%', width: '40px', height: '40px', 
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                {/* Search Bar */}
+                <div style={{
+                    pointerEvents: 'auto',
+                    background: 'white',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    height: '48px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 12px',
+                    gap: '12px'
                 }}>
-                    <ChevronLeft size={24} color="#333" />
-                </button>
-                
-                {/* Horizontal Scroll Filters */}
-                <div style={{ 
-                    pointerEvents: 'auto', 
-                    flex: 1, 
-                    display: 'flex', 
-                    gap: '8px', 
-                    overflowX: 'auto', 
-                    padding: '4px 0',
-                    scrollbarWidth: 'none', // Hide scrollbar
+                    <button onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}>
+                        <ChevronLeft size={24} color="#333" />
+                    </button>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', color: '#999' }}>
+                        <Search size={20} />
+                        <span style={{ fontSize: '15px' }}>찾고 있는 맛집이 있나요?</span>
+                    </div>
+                    <button style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}>
+                        <Menu size={24} color="#333" />
+                    </button>
+                </div>
+
+                {/* Filter Chips */}
+                <div style={{
+                    pointerEvents: 'auto',
+                    display: 'flex',
+                    gap: '8px',
+                    overflowX: 'auto',
+                    paddingBottom: '8px',
+                    marginLeft: '-4px', paddingLeft: '4px', // Visual adjustment for shadow clipping
+                    scrollbarWidth: 'none',
                     msOverflowStyle: 'none'
                 }}>
+                    <button
+                        onClick={() => setSelectedFilters([])}
+                        style={{
+                            flexShrink: 0,
+                            padding: '6px 14px',
+                            borderRadius: '20px',
+                            border: selectedFilters.length === 0 ? 'none' : '1px solid #ddd',
+                            background: selectedFilters.length === 0 ? '#333' : 'white',
+                            color: selectedFilters.length === 0 ? 'white' : '#555',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+                        }}
+                    >
+                        전체
+                    </button>
                     {allergensList.map(allergen => (
                         <button
                             key={allergen.id}
@@ -113,26 +138,26 @@ const MapView = ({ restaurants = [] }) => {
                                 flexShrink: 0,
                                 padding: '6px 12px',
                                 borderRadius: '20px',
-                                border: `1px solid ${selectedFilters.includes(allergen.id) ? 'var(--primary-color)' : '#ddd'}`,
-                                background: selectedFilters.includes(allergen.id) ? 'var(--primary-color)' : 'white',
-                                color: selectedFilters.includes(allergen.id) ? 'white' : '#555',
+                                border: selectedFilters.includes(allergen.id) ? '1px solid var(--primary-color)' : 'none',
+                                background: 'white',
+                                color: selectedFilters.includes(allergen.id) ? 'var(--primary-color)' : '#555',
                                 fontSize: '13px',
                                 fontWeight: 600,
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '4px',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
                             }}
                         >
                             <span>{allergen.icon}</span>
-                            <span>{allergen.name}</span>
-                            {selectedFilters.includes(allergen.id) && <Check size={12} strokeWidth={3} />}
+                            <span>{allergen.name}안심</span>
+                            {selectedFilters.includes(allergen.id) && <Check size={14} />}
                         </button>
                     ))}
                 </div>
-            </header>
+            </div>
 
-            {/* 2. Map Instance */}
+            {/* --- 2. Map Instance --- */}
             <Map
                 center={state.center}
                 isPanto={state.isPanto}
@@ -140,104 +165,200 @@ const MapView = ({ restaurants = [] }) => {
                 level={4}
                 onClick={() => setSelectedId(null)}
             >
-                {/* User Location Marker */}
+                {/* User Location */}
                 {myLocation && (
                     <MapMarker
                         position={myLocation}
                         image={{
-                            src: 'https://cdn-icons-png.flaticon.com/512/7506/7506114.png', // Blue dot style
+                            src: 'https://cdn-icons-png.flaticon.com/512/7506/7506114.png',
                             size: { width: 44, height: 44 }
                         }}
-                        title="내 위치"
                     />
                 )}
 
-                {/* Restaurant Markers */}
-                {filteredRestaurants.map((res) => (
-                    <MapMarker
-                        key={res.id}
-                        position={{ lat: res.position[0], lng: res.position[1] }}
-                        onClick={() => setSelectedId(res.id === selectedId ? null : res.id)}
-                        image={{
-                            src: 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png',
-                            size: { width: 36, height: 36 }
-                        }}
-                    />
-                ))}
-
-                {/* Info Window (Custom Overlay) */}
-                {selectedId && (
-                    <CustomOverlayMap
-                        position={{
-                            lat: restaurants.find(r => r.id === selectedId).position[0],
-                            lng: restaurants.find(r => r.id === selectedId).position[1]
-                        }}
-                        yAnchor={1.4}
-                    >
-                        <div onClick={() => navigate(`/restaurant/${selectedId}`)} style={{
-                            background: 'white',
-                            padding: '12px',
-                            borderRadius: '16px',
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-                            width: '240px',
-                            display: 'flex',
-                            gap: '12px',
-                            cursor: 'pointer',
-                            position: 'relative',
-                            animation: 'fadeInUp 0.2s ease-out'
-                        }}>
-                            <img
-                                src={restaurants.find(r => r.id === selectedId).image}
-                                alt=""
-                                style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }}
-                            />
-                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                <h3 style={{ fontSize: '15px', fontWeight: 700, margin: '0 0 4px', color: '#1a1a1a' }}>
-                                    {restaurants.find(r => r.id === selectedId).name}
-                                </h3>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#666' }}>
-                                    <Star size={14} fill="#FFD700" color="#FFD700" />
-                                    <span style={{ fontWeight: 600, color: '#333' }}>{restaurants.find(r => r.id === selectedId).rating}</span>
-                                    <span>· {restaurants.find(r => r.id === selectedId).type}</span>
+                {/* Restaurants */}
+                {filteredRestaurants.map((res) => {
+                    const isSelected = res.id === selectedId;
+                    return (
+                        <MapMarker
+                            key={res.id}
+                            position={{ lat: res.position[0], lng: res.position[1] }}
+                            onClick={() => setSelectedId(isSelected ? null : res.id)}
+                            image={{
+                                src: isSelected 
+                                    ? 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png' // Larger on selection (simulated)
+                                    : 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png',
+                                size: isSelected ? { width: 48, height: 48 } : { width: 36, height: 36 }
+                            }}
+                        >
+                            {/* Label Overlay for Selected Marker */}
+                            {isSelected && (
+                                <div style={{
+                                    padding: '4px 8px',
+                                    background: 'white',
+                                    borderRadius: '12px',
+                                    fontSize: '12px',
+                                    fontWeight: 'bold',
+                                    color: '#333',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                    marginBottom: '8px',
+                                    textAlign: 'center',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    {res.name}
                                 </div>
-                                <div style={{ marginTop: '6px', display: 'flex', gap: '4px' }}>
-                                    {restaurants.find(r => r.id === selectedId).safeFor.slice(0, 3).map(safe => {
+                            )}
+                        </MapMarker>
+                    );
+                })}
+
+                {/* Info Window (Custom Overlay) - Kept for fallback, but main info is now in Bottom Sheet/Card */}
+            </Map>
+
+            {/* --- 3. Floating Controls (Bottom) --- */}
+            {/* My Location (Bottom-Left) */}
+            <button
+                onClick={moveToMyLocation}
+                style={{
+                    position: 'absolute',
+                    bottom: selectedId ? '240px' : '100px', // Adjust based on sheet height
+                    left: '16px',
+                    zIndex: 20,
+                    width: '44px', height: '44px',
+                    borderRadius: '50%',
+                    background: 'white',
+                    border: '1px solid #eee',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer',
+                    transition: 'bottom 0.3s ease'
+                }}
+            >
+                <Crosshair size={22} color={myLocation ? "var(--primary-color)" : "#666"} />
+            </button>
+
+            {/* List View (Bottom-Right) */}
+            <button
+                style={{
+                    position: 'absolute',
+                    bottom: selectedId ? '240px' : '100px', // Adjust based on sheet height
+                    right: '16px',
+                    zIndex: 20,
+                    padding: '10px 16px',
+                    borderRadius: '24px',
+                    background: 'white',
+                    border: '1px solid #eee',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    cursor: 'pointer',
+                    transition: 'bottom 0.3s ease'
+                }}
+            >
+                <List size={18} color="#333" />
+                <span style={{ fontSize: '13px', fontWeight: 600, color: '#333' }}>목록</span>
+            </button>
+
+            {/* --- 4. Bottom Sheet (Restaurant Info or Summary) --- */}
+            <div style={{
+                position: 'absolute',
+                bottom: 0, left: 0, right: 0,
+                zIndex: 30,
+                background: 'white',
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px',
+                boxShadow: '0 -4px 16px rgba(0,0,0,0.1)',
+                transform: selectedId ? 'translateY(0)' : 'translateY(100%)', // Show only when selected for now, or maintain mini-sheet
+                transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                paddingBottom: '20px' // Safe area
+            }}>
+                {/* Drag Handle */}
+                <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '12px' }}>
+                    <div style={{ width: '40px', height: '4px', background: '#ddd', borderRadius: '2px' }} />
+                </div>
+
+                {/* Content */}
+                {selectedId ? (
+                    (() => {
+                        const res = restaurants.find(r => r.id === selectedId);
+                        return (
+                            <div onClick={() => navigate(`/restaurant/${selectedId}`)} style={{ padding: '0 20px 20px', cursor: 'pointer' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <div>
+                                        <h2 style={{ fontSize: '20px', fontWeight: 700, margin: '0 0 4px' }}>{res?.name}</h2>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#666', fontSize: '14px' }}>
+                                            <span style={{ color: 'var(--primary-color)', fontWeight: 600 }}>{res?.rating}</span>
+                                            <div style={{ display: 'flex' }}>
+                                                {[...Array(5)].map((_, i) => (
+                                                    <Star key={i} size={12} fill={i < Math.floor(res?.rating || 0) ? "#FFD700" : "#ddd"} color="none" />
+                                                ))}
+                                            </div>
+                                            <span>({res?.reviewCount})</span>
+                                            <span>· {res?.distance}</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ 
+                                        width: '40px', height: '40px', borderRadius: '50%', background: '#Ffeeec', 
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                                    }}>
+                                        <Check size={20} color="var(--primary-color)" />
+                                    </div>
+                                </div>
+                                
+                                <div style={{ marginTop: '16px', display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                                    {res?.safeFor.map(safe => {
                                         const allergen = allergensList.find(a => a.id === safe);
                                         return allergen && (
-                                            <span key={safe} style={{ fontSize: '11px', background: '#f0fdf4', color: '#166534', padding: '2px 6px', borderRadius: '4px' }}>
-                                                {allergen.name}안심
+                                            <span key={safe} style={{ 
+                                                fontSize: '12px', background: '#f5f5f5', color: '#555', 
+                                                padding: '6px 10px', borderRadius: '8px', whiteSpace: 'nowrap' 
+                                            }}>
+                                                {allergen.icon} {allergen.name}안심
                                             </span>
                                         );
                                     })}
                                 </div>
-                            </div>
-                        </div>
-                    </CustomOverlayMap>
-                )}
-            </Map>
 
-            {/* 3. My Location Button */}
-            <button 
-                onClick={moveToMyLocation}
-                style={{
+                                <button style={{
+                                    marginTop: '20px', width: '100%', padding: '14px',
+                                    background: 'var(--primary-color)', color: 'white',
+                                    border: 'none', borderRadius: '12px',
+                                    fontSize: '15px', fontWeight: 600, cursor: 'pointer'
+                                }}>
+                                    상세보기 및 예약하기
+                                </button>
+                            </div>
+                        );
+                    })()
+                ) : (
+                    // Default State (When nothing selected) - Mini Sheet
+                    <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
+                         <p>지도를 움직여 안심 식당을 찾아보세요</p>
+                    </div>
+                )}
+            </div>
+            
+            {/* Show simple banner when nothing selected to mimic reference "Nearby" */}
+            {!selectedId && (
+                 <div style={{
                     position: 'absolute',
-                    bottom: '100px', // Above bottom nav
-                    right: '20px',
-                    zIndex: 20,
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '50%',
+                    bottom: '80px', // Above nav
+                    left: 0, right: 0,
                     background: 'white',
-                    border: 'none',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer'
-                }}
-            >
-                <Crosshair size={24} color={myLocation ? "var(--primary-color)" : "#999"} />
-            </button>
+                    borderTopLeftRadius: '20px', borderTopRightRadius: '20px',
+                    boxShadow: '0 -4px 16px rgba(0,0,0,0.1)',
+                    padding: '20px',
+                    zIndex: 25
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                            <span style={{ fontSize: '16px', fontWeight: 700 }}>주변 1km</span>
+                            <span style={{ marginLeft: '8px', color: 'var(--primary-color)', fontWeight: 600 }}>{filteredRestaurants.length}곳</span>
+                            <span style={{ marginLeft: '4px', color: '#888' }}>검색됨</span>
+                        </div>
+                        <ChevronLeft style={{ transform: 'rotate(-90deg)', color: '#ccc' }} />
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
