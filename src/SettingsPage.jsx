@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, LogOut, Bell, Shield, CircleHelp, FileText } from 'lucide-react';
+import { ChevronLeft, LogOut, Bell, Shield, CircleHelp, FileText, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
