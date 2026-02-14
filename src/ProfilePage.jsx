@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Settings, Edit, User, Share2, Plus, Trash2, Check, X, ShieldCheck } from 'lucide-react';
+import { Settings, Edit, User, Share2, Plus, Trash2, Check, X, ShieldCheck, Search, Bell } from 'lucide-react';
 import AllergyCard from './AllergyCard';
 import './index.css';
 
