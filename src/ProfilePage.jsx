@@ -27,7 +27,27 @@ const ProfilePage = () => {
         };
     });
 
-    // Save default if not exists
+    // Force sync with SSO if default name is still present or if email doesn't match
+    useEffect(() => {
+        if (currentUser) {
+            // Check if we need to sync
+            const isDefaultName = user.name === "김라연";
+            const isEmailMismatch = user.email !== currentUser.email;
+
+            if (isDefaultName || isEmailMismatch) {
+                console.log("Syncing profile with SSO data...");
+                const updatedUser = {
+                    ...user,
+                    name: currentUser.displayName || user.name, // Use SSO name or keep existing (if SSO has no name)
+                    email: currentUser.email || user.email
+                };
+                setUser(updatedUser);
+                localStorage.setItem('user_profile', JSON.stringify(updatedUser));
+            }
+        }
+    }, [currentUser, user]);
+
+    // Save changes to localStorage (general sync)
     useEffect(() => {
         if (!localStorage.getItem('user_profile')) {
             localStorage.setItem('user_profile', JSON.stringify(user));

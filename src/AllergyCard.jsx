@@ -5,16 +5,19 @@ import './index.css';
 
 const AllergyCard = ({ user = { name: "김라연", birthDate: "2001.03.22" }, allergies = ['shrimp', 'crab', 'peanut'], customMessage }) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const [currentLang, setCurrentLang] = useState('KO'); // KO, EN, JA, ZH
+  const [currentLang, setCurrentLang] = useState('KO'); // KO, EN, JA, ZH, VN, TH
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
   const selectedAllergens = allergensList.filter(a => allergies.includes(a.id));
 
+  // Expanded Language Options
   const languages = [
-    { code: 'KO', label: '한국어', icon: '🇰🇷' },
-    { code: 'EN', label: 'English', icon: '🇺🇸' },
-    { code: 'JA', label: '日本語', icon: '🇯🇵' },
-    { code: 'ZH', label: '中文', icon: '🇨🇳' },
+    { code: 'KO', label: '한국어', flag: '🇰🇷' },
+    { code: 'EN', label: 'English', flag: '🇺🇸' },
+    { code: 'JA', label: '日本語', flag: '🇯🇵' },
+    { code: 'ZH', label: '中文', flag: '🇨🇳' },
+    { code: 'VN', label: 'Tiếng Việt', flag: '🇻🇳' },
+    { code: 'TH', label: 'ไทย', flag: '🇹🇭' }
   ];
 
   const handleLanguageSelect = (langCode) => {
@@ -27,8 +30,7 @@ const AllergyCard = ({ user = { name: "김라연", birthDate: "2001.03.22" }, al
     'KO': {
         notice: "NOTICE",
         warningTitle: "절대 먹으면 안돼요! (No!)",
-        flipHint: "탭하여 뒷면 보기"
-    },
+        flipHint: "탭하여 뒷면 보기"    },
     'EN': {
         notice: "NOTICE",
         warningTitle: "Absolutely do not eat! (No!)",
@@ -43,6 +45,16 @@ const AllergyCard = ({ user = { name: "김라연", birthDate: "2001.03.22" }, al
         notice: "NOTICE",
         warningTitle: "绝对不能吃！(No!)",
         flipHint: "点击翻转"
+    },
+    'VN': {
+        notice: "LƯU Ý",
+        warningTitle: "Tuyệt đối không ăn! (No!)",
+        flipHint: "Chạm để lật"
+    },
+    'TH': {
+        notice: "ข้อควรระวัง",
+        warningTitle: "ห้ามรับประทานเด็ดขาด! (No!)",
+        flipHint: "แตะเพื่อพลิก"
     }
   };
 
@@ -55,8 +67,16 @@ const AllergyCard = ({ user = { name: "김라연", birthDate: "2001.03.22" }, al
       // 2. For foreign languages, GENERATE a safe message based on the user's specific allergies
       // This ensures 100% accuracy without needing an API.
       
-      const targetProp = currentLang === 'JA' ? 'jaName' : (currentLang === 'ZH' ? 'zhName' : 'enName');
-      const separator = currentLang === 'EN' ? ', ' : '、';
+      let targetProp = 'enName';
+      let separator = ', ';
+
+      switch(currentLang) {
+          case 'JA': targetProp = 'jaName'; separator = '、'; break;
+          case 'ZH': targetProp = 'zhName'; separator = '、'; break;
+          case 'VN': targetProp = 'vnName'; separator = ', '; break;
+          case 'TH': targetProp = 'thName'; separator = ' '; break; // Thai usually uses space or nothing, but space is safe.
+          default: targetProp = 'enName'; separator = ', '; // Default EN
+      }
       
       const allergenText = selectedAllergens
           .map(a => a[targetProp])
