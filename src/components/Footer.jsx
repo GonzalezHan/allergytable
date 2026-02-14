@@ -30,8 +30,6 @@ const Footer = () => {
             </div>
             
             <div style={{ fontSize: '10px', color: '#ccc', lineHeight: '1.5' }}>
-                (주)AllergyTable | 대표: 김알러지<br/>
-                사업자등록번호: 000-00-00000<br/>
                 Copyright © AllergyTable. All Rights Reserved.
             </div>
         </div>
