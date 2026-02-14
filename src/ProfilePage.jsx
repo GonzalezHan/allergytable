@@ -1,20 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Settings, Edit, User, Share2, Plus, Trash2, Check, X, ShieldCheck, Search, Bell } from 'lucide-react';
+import { useAuth } from './AuthContext';
 import AllergyCard from './AllergyCard';
 import './index.css';
 
 const ProfilePage = () => {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     
     // Mock user data specified by user requirements
     // Load user data from localStorage
     const [user, setUser] = useState(() => {
         const stored = localStorage.getItem('user_profile');
-        return stored ? JSON.parse(stored) : {
-            name: "김라연",
+        if (stored) {
+            return JSON.parse(stored);
+        }
+        
+        // Default to SSO info if available
+        return {
+            name: currentUser?.displayName || "김라연",
             birthDate: "2001.03.22",
-            email: "rayeon@allergytable.com",
+            email: currentUser?.email || "rayeon@allergytable.com",
             allergies: ['shrimp', 'crab', 'peanut', 'egg'],
             severity: 'warning'
         };
@@ -25,7 +32,7 @@ const ProfilePage = () => {
         if (!localStorage.getItem('user_profile')) {
             localStorage.setItem('user_profile', JSON.stringify(user));
         }
-    }, []);
+    }, [user]);
 
     // Default message (Korean + English)
     const defaultMessage = "죄송하지만,\n저는 <span style='color: var(--primary-color)'>심각한 알러지</span>가\n있습니다.\n<span style='font-size:15px; color:#666; font-weight:400; display:block; margin-top:8px'>Excuse me, I have severe food allergies. Please help me check the ingredients.</span>";

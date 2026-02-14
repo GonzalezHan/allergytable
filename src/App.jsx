@@ -261,13 +261,14 @@ function ProfilePageWrapper() {
 
 function AllergyProfileSetupWrapper() {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     
     // Load current profile for initial state
     const stored = localStorage.getItem('user_profile');
     const user = stored ? JSON.parse(stored) : { 
-        name: "김라연", 
+        name: currentUser?.displayName || "김라연", 
         birthDate: "2001.03.22",
-        email: "rayeon@allergytable.com",
+        email: currentUser?.email || "rayeon@allergytable.com",
         allergies: [], 
         severity: 'warning' 
     };
