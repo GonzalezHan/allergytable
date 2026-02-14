@@ -223,7 +223,7 @@ const ProfilePage = () => {
                                 onClick={() => handleMessageSelect(idx)}
                                 style={{ 
                                     padding: '12px 16px', 
-                                    background: selectedMessageIndex === idx ? 'rgba(255, 79, 40, 0.05)' : 'white', 
+                                    background: selectedMessageIndex === idx ? 'rgba(0, 177, 106, 0.05)' : 'white', 
                                     border: selectedMessageIndex === idx ? '1px solid var(--primary-color)' : '1px solid #eee',
                                     borderRadius: '12px', cursor: 'pointer',
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between'

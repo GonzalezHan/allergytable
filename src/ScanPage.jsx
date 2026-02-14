@@ -468,7 +468,7 @@ const ScanPage = () => {
                                     다시 찍기
                                 </button>
                                 {!result && (
-                                    <button onClick={handleAnalyze} style={{ flex: 1, padding: '14px', borderRadius: '12px', background: '#FF4F28', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                    <button onClick={handleAnalyze} style={{ flex: 1, padding: '14px', borderRadius: '12px', background: 'var(--primary-color)', color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                         <Zap size={18} fill="white" /> 분석하기
                                     </button>
                                 )}
