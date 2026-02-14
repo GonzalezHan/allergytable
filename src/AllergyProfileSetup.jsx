@@ -4,24 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import './index.css';
 
-const allergenOptions = [
-    { id: 'egg', name: '계란', icon: '🥚' },
-    { id: 'peanut', name: '땅콩', icon: '🥜' },
-    { id: 'dairy', name: '유제품', icon: '🥛' },
-    { id: 'wheat', name: '밀', icon: '🌾' },
-    { id: 'soy', name: '대두', icon: '🫘' },
-    { id: 'shellfish', name: '갑각류', icon: '🦐' },
-    { id: 'fish', name: '생선', icon: '🐟' },
-    { id: 'crab', name: '게', icon: '🦀' },
-    { id: 'fruit', name: '과일', icon: '🍇' },
-    { id: 'other', name: '기타', icon: '🥗' },
-];
-
-const severityLevels = [
-    { id: 'mild', name: '경미', color: '#4CAF50' },
-    { id: 'warning', name: '주의', color: '#FF9800' },
-    { id: 'severe', name: '심각', color: '#F44336' },
-];
+import { allergensList as allergenOptions, severityLevels } from './data';
 
 const AllergyProfileSetup = ({ onBack, onSave, initialAllergies = [], initialSeverity = 'warning' }) => {
     const navigate = useNavigate();

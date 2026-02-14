@@ -253,9 +253,15 @@ function FavoritesPageWrapper() {
     return <FavoritesPage favorites={favoriteRestaurants} onBack={() => navigate('/')} onRestaurantClick={(r) => navigate(`/restaurant/${r.id}`)} />
 }
 
+import ProfilePage from './ProfilePage'
+
 function ProfilePageWrapper() {
+    return <ProfilePage />
+}
+
+function AllergyProfileSetupWrapper() {
     const navigate = useNavigate()
-    return <AllergyProfileSetup onBack={() => navigate('/')} onSave={(data) => { console.log('Profile saved:', data); navigate('/') }} initialAllergies={['egg', 'dairy']} />
+    return <AllergyProfileSetup onBack={() => navigate('/profile')} onSave={(data) => { console.log('Profile saved:', data); navigate('/profile') }} initialAllergies={['egg', 'dairy']} />
 }
 
 function RestaurantDetailWrapper() {
@@ -279,6 +285,7 @@ function App() {
                         <Route path="/favorites" element={<RequireAuth><FavoritesPageWrapper /></RequireAuth>} />
                         <Route path="/scan" element={<RequireAuth allowGuest={true}><ScanPage /></RequireAuth>} />
                         <Route path="/profile" element={<RequireAuth><ProfilePageWrapper /></RequireAuth>} />
+                        <Route path="/profile/edit" element={<RequireAuth><AllergyProfileSetupWrapper /></RequireAuth>} />
                         <Route path="/restaurant/:id" element={<RequireAuth allowGuest={true}><RestaurantDetailWrapper /></RequireAuth>} />
                         <Route path="/reservation-success" element={<RequireAuth allowGuest={true}><ReservationSuccess /></RequireAuth>} />
                         <Route path="/map" element={<RequireAuth allowGuest={true}><MapViewWrapper /></RequireAuth>} />
