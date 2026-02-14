@@ -317,8 +317,8 @@ function App() {
                         <Route path="/profile" element={<RequireAuth><ProfilePageWrapper /></RequireAuth>} />
                         <Route path="/profile/edit" element={<RequireAuth><AllergyProfileSetupWrapper /></RequireAuth>} />
                         <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
-                        <Route path="/settings/terms" element={<RequireAuth allowGuest={true}><TermsPage /></RequireAuth>} />
-                        <Route path="/settings/help" element={<RequireAuth allowGuest={true}><HelpPage /></RequireAuth>} />
+                        <Route path="/settings/terms" element={<TermsPage />} />
+                        <Route path="/settings/help" element={<HelpPage />} />
                         <Route path="/restaurant/:id" element={<RequireAuth allowGuest={true}><RestaurantDetailWrapper /></RequireAuth>} />
                         <Route path="/reservation-success" element={<RequireAuth allowGuest={true}><ReservationSuccess /></RequireAuth>} />
                         <Route path="/map" element={<RequireAuth allowGuest={true}><MapViewWrapper /></RequireAuth>} />
