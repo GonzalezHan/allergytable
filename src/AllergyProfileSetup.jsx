@@ -50,45 +50,50 @@ const AllergyProfileSetup = ({ onBack, onSave, initialAllergies = [], initialSev
                     />
                 </div>
 
-                <p className="profile-subtitle">
-                    안전한 외식을 위해 알러지 정보를 등록해주세요
-                </p>
+                {/* Allergy & Severity Group */}
+                <div className="allergy-group-container">
+                    <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#333', marginBottom: '12px' }}>
+                        알러지 정보 등록
+                    </h3>
 
-                {/* Allergy Grid */}
-                <div className="allergy-grid">
-                    {allergenOptions.map(allergen => (
-                        <div
-                            key={allergen.id}
-                            className={`allergy-card ${selectedAllergies.includes(allergen.id) ? 'selected' : ''}`}
-                            onClick={() => toggleAllergy(allergen.id)}
-                        >
-                            <span className="allergy-card-icon">{allergen.icon}</span>
-                            <span className="allergy-card-name">{allergen.name}</span>
-                            {selectedAllergies.includes(allergen.id) && (
-                                <div className="allergy-card-check">
-                                    <Check size={16} />
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-
-                {/* Severity Selector */}
-                <div className="severity-section">
-                    <h3>알러지 심각도</h3>
-                    <div className="severity-options">
-                        {severityLevels.map(level => (
-                            <button
-                                key={level.id}
-                                className={`severity-btn ${severity === level.id ? 'active' : ''}`}
-                                style={{
-                                    '--severity-color': level.color
-                                }}
-                                onClick={() => setSeverity(level.id)}
+                    {/* Allergy Grid */}
+                    <div className="allergy-grid compact">
+                        {allergenOptions.map(allergen => (
+                            <div
+                                key={allergen.id}
+                                className={`allergy-card compact ${selectedAllergies.includes(allergen.id) ? 'selected' : ''}`}
+                                onClick={() => toggleAllergy(allergen.id)}
                             >
-                                {level.name}
-                            </button>
+                                <span className="allergy-card-icon">{allergen.icon}</span>
+                                <span className="allergy-card-name">{allergen.name}</span>
+                                {selectedAllergies.includes(allergen.id) && (
+                                    <div className="allergy-card-check">
+                                        <Check size={14} />
+                                    </div>
+                                )}
+                            </div>
                         ))}
+                    </div>
+
+                    <div style={{ height: '1px', background: '#eee', margin: '16px 0' }}></div>
+
+                    {/* Severity Selector */}
+                    <div className="severity-section compact">
+                        <div style={{ fontSize: '13px', fontWeight: 600, color: '#666', marginBottom: '8px' }}>심각도</div>
+                        <div className="severity-options">
+                            {severityLevels.map(level => (
+                                <button
+                                    key={level.id}
+                                    className={`severity-btn compact ${severity === level.id ? 'active' : ''}`}
+                                    style={{
+                                        '--severity-color': level.color
+                                    }}
+                                    onClick={() => setSeverity(level.id)}
+                                >
+                                    {level.name}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
