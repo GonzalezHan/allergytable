@@ -27,12 +27,12 @@ export const categories = [
 ];
 
 export const translationTemplates = {
-    'KO': "죄송하지만,\n저는 <span style='color: var(--primary-color)'>심각한 알러지</span>가\n있습니다.\n<span style='font-size:14px; color:#666; display:block; margin-top:8px'>식재료를 꼼꼼히 확인해 주세요.</span>",
-    'EN': "Excuse me,\nI have a severe allergy to <span style='color: var(--primary-color)'>{allergens}</span>.\n<span style='font-size:14px; color:#666; display:block; margin-top:8px'>Please ensure my food does not contain these ingredients.</span>",
-    'JA': "すみません、\n私は <span style='color: var(--primary-color)'>{allergens}</span> の\n重度のアレルギーがあります。\n<span style='font-size:14px; color:#666; display:block; margin-top:8px'>これらの食材が含まれていないことを確認してください。</span>",
-    'ZH': "不好意思，\n我有严重的 <span style='color: var(--primary-color)'>{allergens}</span> 过敏。\n<span style='font-size:14px; color:#666; display:block; margin-top:8px'>请确保我的食物中不包含这些成分。</span>",
-    'VN': "Xin lỗi, tôi bị dị ứng nặng với <span style='color: var(--primary-color)'>{allergens}</span>.\n<span style='font-size:14px; color:#666; display:block; margin-top:8px'>Vui lòng đảm bảo món ăn không có các thành phần này.</span>",
-    'TH': "ขอโทษครับ/ค่ะ, ฉันแพ้ <span style='color: var(--primary-color)'>{allergens}</span> อย่างรุนแรง\n<span style='font-size:14px; color:#666; display:block; margin-top:8px'>กรุณาตรวจสอบส่วนผสมให้ด้วยครับ/ค่ะ</span>"
+    'KO': "죄송하지만,\n저는 <span style='color: var(--danger-red)'>심각한 알러지</span>가\n있습니다.\n<span style='display:block; margin-top:8px'>식재료를 꼼꼼히 확인해 주세요.</span>",
+    'EN': "Excuse me,\nI have a severe allergy to <span style='color: var(--danger-red)'>{allergens}</span>.\n<span style='display:block; margin-top:8px'>Please ensure my food does not contain these ingredients.</span>",
+    'JA': "すみません、\n私は <span style='color: var(--danger-red)'>{allergens}</span> の\n重度のアレルギーがあります。\n<span style='display:block; margin-top:8px'>これらの食材が含まれていないことを確認してください。</span>",
+    'ZH': "不好意思，\n我有严重的 <span style='color: var(--danger-red)'>{allergens}</span> 过敏。\n<span style='display:block; margin-top:8px'>请确保我的食物中不包含这些成分。</span>",
+    'VN': "Xin lỗi, tôi bị dị ứng nặng với <span style='color: var(--danger-red)'>{allergens}</span>.\n<span style='display:block; margin-top:8px'>Vui lòng đảm bảo món ăn không có các thành phần này.</span>",
+    'TH': "ขอโทษครับ/ค่ะ, ฉันแพ้ <span style='color: var(--danger-red)'>{allergens}</span> อย่างรุนแรง\n<span style='display:block; margin-top:8px'>กรุณาตรวจสอบส่วนผสมให้ด้วยครับ/ค่ะ</span>"
 };
 
 export const mockRestaurants = [

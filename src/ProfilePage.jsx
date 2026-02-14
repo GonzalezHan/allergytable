@@ -55,7 +55,7 @@ const ProfilePage = () => {
     }, [user]);
 
     // Default message (Korean + English)
-    const defaultMessage = "죄송하지만,\n저는 <span style='color: var(--danger-red)'>심각한 알러지</span>가\n있습니다.\n<span style='font-size:15px; color:#666; font-weight:400; display:block; margin-top:8px'>Excuse me, I have severe food allergies. Please help me check the ingredients.</span>";
+    const defaultMessage = "죄송하지만,\n저는 <span style='color: var(--danger-red)'>심각한 알러지</span>가\n있습니다.\n<span style='display:block; margin-top:8px'>Excuse me, I have severe food allergies. Please help me check the ingredients.</span>";
 
     // State for Custom Messages
     const [savedMessages, setSavedMessages] = useState([]);
