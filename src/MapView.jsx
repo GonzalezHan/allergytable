@@ -296,8 +296,8 @@ const MapView = ({ restaurants = [] }) => {
                                 onClick={() => setSelectedId(isSelected ? null : res.id)}
                                 image={{
                                     src: isSelected 
-                                        ? 'data:image/svg+xml;charset=utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FF4F28" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/%3E%3Ccircle cx="12" cy="10" r="3" fill="white"/%3E%3C/svg%3E'
-                                        : 'data:image/svg+xml;charset=utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FF4F28" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/%3E%3Ccircle cx="12" cy="10" r="3" fill="white"/%3E%3C/svg%3E',
+                                        ? 'data:image/svg+xml;charset=utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2300B16A" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/%3E%3Ccircle cx="12" cy="10" r="3" fill="white"/%3E%3C/svg%3E'
+                                        : 'data:image/svg+xml;charset=utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2300B16A" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpath d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/%3E%3Ccircle cx="12" cy="10" r="3" fill="white"/%3E%3C/svg%3E',
                                     size: isSelected ? { width: 50, height: 50 } : { width: 40, height: 40 }
                                 }}
                             >
@@ -412,7 +412,7 @@ const MapView = ({ restaurants = [] }) => {
                                             </div>
                                         </div>
                                         <div style={{ 
-                                            width: '40px', height: '40px', borderRadius: '50%', background: '#Ffeeec', 
+                                            width: '40px', height: '40px', borderRadius: '50%', background: 'var(--primary-light)', 
                                             display: 'flex', alignItems: 'center', justifyContent: 'center' 
                                         }}>
                                             <Check size={20} color="var(--primary-color)" />

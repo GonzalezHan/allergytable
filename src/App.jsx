@@ -111,7 +111,7 @@ function HomePage() {
             }}>
                 {/* Line 1: Logo, Search, Icons */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <img src="/logo.png" alt="AT" style={{ width: '28px', height: '28px', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+                    <img src="/logo.png" alt="AT" style={{ width: '42px', height: '42px', objectFit: 'contain', mixBlendMode: 'multiply' }} />
                     
                     <div 
                         onClick={() => navigate('/search')}

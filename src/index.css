@@ -5,10 +5,10 @@
 
   color-scheme: light;
 
-  /* Catch Table Style Palette */
-  --primary-color: #FF4F28;
-  /* Deep Orange/Red */
-  --primary-light: #FFF0ED;
+  /* Brand Color Palette */
+  --primary-color: #00B16A;
+  /* Brand Green */
+  --primary-light: #E8F7EF;
   --secondary-color: #111111;
 
   --bg-color: #F7F7F7;
