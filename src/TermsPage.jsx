@@ -62,7 +62,7 @@ const TermsPage = () => {
 
                 <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '8px' }}>2. 개인정보의 수집 및 이용목적</h3>
                 <p style={{ marginBottom: '20px' }}>
-                    회사는 수집한 개인정보를 다음의 목적으로만 활용합니다.<br/>
+                    운영자는 수집한 개인정보를 다음의 목적으로만 활용합니다.<br/>
                     - 회원 관리: 본인 확인, 개인 식별, 알러지 맞춤형 콘텐츠 제공<br/>
                     - 서비스 제공: 사용자 알러지 정보에 기반한 식당 및 메뉴 필터링 기능 제공
                 </p>
@@ -83,17 +83,17 @@ const TermsPage = () => {
                 
                 <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '8px' }}>1. 목적</h3>
                 <p style={{ marginBottom: '20px' }}>
-                    본 약관은 회사가 제공하는 위치기반서비스와 관련하여 회사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
+                    본 약관은 운영자가 제공하는 위치기반서비스와 관련하여 운영자와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
                 </p>
 
                 <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '8px' }}>2. 서비스 내용</h3>
                 <p style={{ marginBottom: '20px' }}>
-                    회사는 이용자의 현재 위치를 기반으로 주변 식당 정보 및 메뉴 추천 서비스를 제공합니다.
+                    운영자는 이용자의 현재 위치를 기반으로 주변 식당 정보 및 메뉴 추천 서비스를 제공합니다.
                 </p>
 
                 <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '8px' }}>3. 위치정보의 이용 및 보유기간</h3>
                 <p style={{ marginBottom: '20px' }}>
-                    회사는 서비스 제공을 위해 필요한 최소한의 기간 동안만 위치정보를 이용하며, 해당 목적 달성 후 즉시 파기합니다. 별도의 저장소에 이용자의 이동 경로 로그를 보관하지 않습니다.
+                    운영자는 서비스 제공을 위해 필요한 최소한의 기간 동안만 위치정보를 이용하며, 해당 목적 달성 후 즉시 파기합니다. 별도의 저장소에 이용자의 이동 경로 로그를 보관하지 않습니다.
                 </p>
 
                 <h3 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '8px' }}>4. 위치정보 관리책임자</h3>
