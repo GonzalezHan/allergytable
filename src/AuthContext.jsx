@@ -49,19 +49,22 @@ export function AuthProvider({ children }) {
         if (naverUser) {
             setCurrentUser({
                 displayName: naverUser.getName() || '네이버 고객님',
+                email: naverUser.getEmail() || '', // Capture email
                 photoURL: naverUser.getProfileImage() || ''
             });
         } else {
             // Manual trigger or dummy
-            setCurrentUser({ displayName: '네이버 고객님', photoURL: '' });
+            setCurrentUser({ displayName: '네이버 고객님', email: '', photoURL: '' });
         }
     };
 
     const loginAsGuest = () => {
+        localStorage.removeItem('user_profile'); // Start fresh for guest
         setCurrentUser({ displayName: '게스트', isGuest: true });
     };
 
     function logout() {
+        localStorage.removeItem('user_profile'); // Clear persisted profile
         setCurrentUser(null);
         return signOut(auth);
     }
