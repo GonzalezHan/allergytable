@@ -1,4 +1,9 @@
+import React, { useEffect } from 'react';
+import { ShieldCheck } from 'lucide-react';
+import { useAuth } from './AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Footer from './components/Footer';
+import './index.css';
 
 const LoginPage = () => {
     // ... existing hook calls ...
