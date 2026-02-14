@@ -81,11 +81,6 @@ const SettingsPage = () => {
 
             <SettingItem icon={<Bell size={20} />} label="알림 설정" />
 
-            {/* Info Section */}
-            <div style={{ padding: '20px 20px 8px', fontSize: '13px', fontWeight: 600, color: '#888' }}>정보</div>
-            <SettingItem icon={<CircleHelp size={20} />} label="고객센터 / 도움말" onClick={() => navigate('/settings/help')} />
-            <SettingItem icon={<FileText size={20} />} label="이용약관 및 개인정보처리방침" onClick={() => navigate('/settings/terms')} />
-
             {/* Logout */}
             <div style={{ marginTop: '20px' }}>
                 <SettingItem icon={<LogOut size={20} />} label="로그아웃" onClick={handleLogout} isDestructive />

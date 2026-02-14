@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Settings, Edit, User, Share2, Plus, Trash2, Check, X, ShieldCheck, Search, Bell } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import AllergyCard from './AllergyCard';
+import Footer from './components/Footer';
 import './index.css';
 
 const ProfilePage = () => {
@@ -272,6 +273,8 @@ const ProfilePage = () => {
                 <div style={{ height: '1px', background: '#f5f5f5', margin: '0 16px' }} />
                 <MenuItem icon={<Settings size={20} />} label="설정" onClick={() => navigate('/settings')} />
             </div>
+
+            <Footer />
 
         </div>
     );
