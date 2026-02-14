@@ -67,34 +67,16 @@ export function AuthProvider({ children }) {
     }
 
     useEffect(() => {
-        let mounted = true;
-        console.log("AuthContext: Initializing...");
-
-        // Safety timeout: If Firebase doesn't respond in 2s, stop loading
-        const timeoutId = setTimeout(() => {
-            if (mounted && loading) {
-                console.warn("AuthContext: Firebase init timed out, forcing loading to false.");
-                setLoading(false);
-            }
-        }, 2000);
-
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             console.log("AuthContext: Auth state changed", user ? "User found" : "No user");
-            if (mounted) {
-                setCurrentUser(user);
-                setLoading(false);
-                clearTimeout(timeoutId);
-            }
+            setCurrentUser(user);
+            setLoading(false);
         }, (error) => {
              console.error("AuthContext: Auth Error", error);
-             if (mounted) setLoading(false);
+             setLoading(false);
         });
 
-        return () => {
-            mounted = false;
-            clearTimeout(timeoutId);
-            unsubscribe();
-        };
+        return unsubscribe;
     }, []);
 
     const value = {
