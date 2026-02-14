@@ -111,7 +111,7 @@ function HomePage() {
             }}>
                 {/* Line 1: Logo, Search, Icons */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <img src="/logo.png" alt="AT" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+                    <img src="/logo.png" alt="AT" style={{ width: '28px', height: '28px', objectFit: 'contain', mixBlendMode: 'multiply' }} />
                     
                     <div 
                         onClick={() => navigate('/search')}
@@ -321,6 +321,13 @@ function App() {
                     <BottomNav />
                 </div>
             </Router>
+            {/* Force Theme Color Override */}
+            <style>{`
+                :root {
+                    --primary-color: #00B16A !important;
+                    --primary-light: #E8F7EF !important;
+                }
+            `}</style>
         </AuthProvider>
     )
 }

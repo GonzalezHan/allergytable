@@ -208,7 +208,7 @@ const ScanPage = () => {
         if (!parsedData) {
              return (
                  <div className="analysis-card" style={{ background: 'rgba(20,20,20,0.9)', padding: '24px', borderRadius: '24px', border: '1px solid #333', width: '90%', margin: '0 auto' }}>
-                    <h3 style={{ margin: '0 0 12px', fontSize: '18px', color: '#FF4F28', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                     <h3 style={{ margin: '0 0 12px', fontSize: '18px', color: 'var(--danger-red)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <AlertTriangle size={18} /> 분석 결과 (텍스트)
                     </h3>
                     <div style={{ whiteSpace: 'pre-wrap', fontSize: '14px', lineHeight: '1.6', color: '#eee' }}>{result}</div>
@@ -247,7 +247,7 @@ const ScanPage = () => {
         let riskColor = '#00B16A'; // Green
         let riskLabel = '안심';
         if (riskScore >= 70) {
-            riskColor = '#FF4F28'; // Red
+            riskColor = 'var(--danger-red)'; // Red
             riskLabel = '위험';
         } else if (riskScore >= 40) {
             riskColor = '#FFB900'; // Yellow
@@ -301,7 +301,7 @@ const ScanPage = () => {
                                 <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '14px' }}>
                                     <span style={{ color: 'white' }}>{item.name}</span>
                                     {item.detected ? (
-                                        <span style={{ color: '#FF4F28', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <span style={{ color: 'var(--danger-red)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
                                             <AlertTriangle size={14}/> 감지됨
                                         </span>
                                     ) : (
@@ -331,7 +331,7 @@ const ScanPage = () => {
                          {parsedData.allergens?.length > 0 ? (
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                                 {parsedData.allergens.map((alg, i) => (
-                                    <span key={i} style={{ background: 'rgba(255, 79, 40, 0.15)', color: '#FF4F28', border: '1px solid rgba(255, 79, 40, 0.3)', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}>{alg}</span>
+                                    <span key={i} style={{ background: 'rgba(255, 59, 48, 0.15)', color: 'var(--danger-red)', border: '1px solid rgba(255, 59, 48, 0.3)', padding: '6px 12px', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}>{alg}</span>
                                 ))}
                             </div>
                         ) : (
@@ -403,7 +403,7 @@ const ScanPage = () => {
                                 }}>
                                     <div className="spinner" style={{ 
                                         width: '40px', height: '40px', border: '3px solid rgba(255,255,255,0.3)', 
-                                        borderTopColor: '#FF4F28', borderRadius: '50%', animation: 'spin 1s linear infinite' 
+                                        borderTopColor: 'var(--primary-color)', borderRadius: '50%', animation: 'spin 1s linear infinite' 
                                     }}></div>
                                     <p style={{ marginTop: '16px', fontWeight: 500 }}>AI가 분석중입니다...</p>
                                 </div>
