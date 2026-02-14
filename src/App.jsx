@@ -45,7 +45,7 @@ function BottomNav() {
         { path: '/favorites', icon: <Star size={24} />, label: '저장' },
         { path: '/scan', icon: <Camera size={24} />, label: '촬영' },
         { path: '/map', icon: <MapPin size={24} />, label: '내주변' },
-        { path: '/profile', icon: <User size={24} />, label: '마이' },
+        { path: '/profile', icon: <User size={24} />, label: 'MY' },
     ];
 
     return (
@@ -260,8 +260,32 @@ function ProfilePageWrapper() {
 }
 
 function AllergyProfileSetupWrapper() {
-    const navigate = useNavigate()
-    return <AllergyProfileSetup onBack={() => navigate('/profile')} onSave={(data) => { console.log('Profile saved:', data); navigate('/profile') }} initialAllergies={['egg', 'dairy']} />
+    const navigate = useNavigate();
+    
+    // Load current profile for initial state
+    const stored = localStorage.getItem('user_profile');
+    const user = stored ? JSON.parse(stored) : { 
+        name: "김라연", 
+        birthDate: "2001.03.22",
+        email: "rayeon@allergytable.com",
+        allergies: [], 
+        severity: 'warning' 
+    };
+
+    const handleSave = (data) => {
+        const updatedUser = { ...user, ...data }; // Merge new allergies & severity
+        localStorage.setItem('user_profile', JSON.stringify(updatedUser));
+        console.log('Profile saved:', updatedUser);
+        navigate('/profile');
+    };
+
+    return <AllergyProfileSetup 
+        onBack={() => navigate('/profile')} 
+        onSave={handleSave} 
+        initialAllergies={user.allergies} 
+        initialSeverity={user.severity}
+        initialName={user.name}
+    />;
 }
 
 function RestaurantDetailWrapper() {
@@ -272,6 +296,8 @@ function MapViewWrapper() {
     const { restaurants } = useRestaurants();
     return <MapView restaurants={restaurants} />
 }
+
+import SettingsPage from './SettingsPage'
 
 function App() {
     return (
@@ -286,6 +312,7 @@ function App() {
                         <Route path="/scan" element={<RequireAuth allowGuest={true}><ScanPage /></RequireAuth>} />
                         <Route path="/profile" element={<RequireAuth><ProfilePageWrapper /></RequireAuth>} />
                         <Route path="/profile/edit" element={<RequireAuth><AllergyProfileSetupWrapper /></RequireAuth>} />
+                        <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
                         <Route path="/restaurant/:id" element={<RequireAuth allowGuest={true}><RestaurantDetailWrapper /></RequireAuth>} />
                         <Route path="/reservation-success" element={<RequireAuth allowGuest={true}><ReservationSuccess /></RequireAuth>} />
                         <Route path="/map" element={<RequireAuth allowGuest={true}><MapViewWrapper /></RequireAuth>} />

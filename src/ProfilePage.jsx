@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Settings, Edit, User, Share2, Plus, Trash2, Check, X } from 'lucide-react';
+import { Settings, Edit, User, Share2, Plus, Trash2, Check, X, ShieldCheck } from 'lucide-react';
 import AllergyCard from './AllergyCard';
 import './index.css';
 
@@ -8,12 +8,24 @@ const ProfilePage = () => {
     const navigate = useNavigate();
     
     // Mock user data specified by user requirements
-    const user = {
-        name: "김라연",
-        birthDate: "2001.03.22",
-        email: "rayeon@allergytable.com",
-        allergies: ['shrimp', 'crab', 'peanut', 'egg'] 
-    };
+    // Load user data from localStorage
+    const [user, setUser] = useState(() => {
+        const stored = localStorage.getItem('user_profile');
+        return stored ? JSON.parse(stored) : {
+            name: "김라연",
+            birthDate: "2001.03.22",
+            email: "rayeon@allergytable.com",
+            allergies: ['shrimp', 'crab', 'peanut', 'egg'],
+            severity: 'warning'
+        };
+    });
+
+    // Save default if not exists
+    useEffect(() => {
+        if (!localStorage.getItem('user_profile')) {
+            localStorage.setItem('user_profile', JSON.stringify(user));
+        }
+    }, []);
 
     // Default message (Korean + English)
     const defaultMessage = "죄송하지만,\n저는 <span style='color: var(--primary-color)'>심각한 알러지</span>가\n있습니다.\n<span style='font-size:15px; color:#666; font-weight:400; display:block; margin-top:8px'>Excuse me, I have severe food allergies. Please help me check the ingredients.</span>";
@@ -99,7 +111,6 @@ const ProfilePage = () => {
         }
     };
 
-
     return (
         <div className="profile-page" style={{ 
             minHeight: '100vh', 
@@ -107,7 +118,7 @@ const ProfilePage = () => {
             paddingBottom: '80px',
             overflowX: 'hidden'
         }}>
-            {/* Header */}
+            {/* Header: Changed title to MY, Added Search & Bell */}
             <div style={{ 
                 padding: '16px 20px', 
                 background: 'white', 
@@ -116,16 +127,17 @@ const ProfilePage = () => {
                 alignItems: 'center',
                 boxShadow: '0 1px 0 rgba(0,0,0,0.05)'
             }}>
-                <h1 style={{ fontSize: '20px', fontWeight: 700 }}>내 알러지 카드</h1>
-                <Settings size={22} color="#333" cursor="pointer" onClick={() => navigate('/settings')} />
+                <h1 style={{ fontSize: '20px', fontWeight: 700 }}>MY</h1>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                     <Search size={22} color="#333" cursor="pointer" onClick={() => navigate('/search')} />
+                     <Bell size={22} color="#333" cursor="pointer" />
+                     <Settings size={22} color="#333" cursor="pointer" onClick={() => navigate('/settings')} />
+                </div>
             </div>
 
-            {/* Banner/Introduction */}
+            {/* Banner/Introduction (Instruction text removed per user request) */}
             <div style={{ padding: '24px 20px 0', textAlign: 'center' }}>
-                <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
-                    식당 직원에게 이 카드를 보여주세요.
-                </p>
-                {/* Badge removed */}
+                 {/* Empty spacer if needed, or just remove */}
             </div>
 
             {/* The Allergy Card */}
@@ -209,10 +221,10 @@ const ProfilePage = () => {
                 )}
             </div>
 
-            {/* Actions */}
-            <div style={{ padding: '0 20px', display: 'flex', gap: '12px' }}>
+            {/* Actions: Edited to remove Edit Info and make Share full width */}
+            <div style={{ padding: '0 20px' }}>
                 <button style={{ 
-                    flex: 1, 
+                    width: '100%',
                     padding: '12px', 
                     background: 'white', 
                     border: '1px solid #eee', 
@@ -225,29 +237,13 @@ const ProfilePage = () => {
                     <Share2 size={18} />
                     카드 공유하기
                 </button>
-                <button 
-                    onClick={() => navigate('/profile/edit')}
-                    style={{ 
-                    flex: 1, 
-                    padding: '12px', 
-                    background: 'white', 
-                    border: '1px solid #eee', 
-                    borderRadius: '12px',
-                    color: '#333', fontWeight: 600,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                    cursor: 'pointer'
-                }}>
-                    <Edit size={18} />
-                    정보 수정
-                </button>
             </div>
 
             {/* Additional Menu */}
             <div style={{ margin: '30px 20px', background: 'white', borderRadius: '16px', padding: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                <MenuItem icon={<User size={20} />} label="내 알러지 프로필 상세 설정" onClick={() => navigate('/profile/edit')} />
+                <MenuItem icon={<User size={20} />} label="프로필 수정" onClick={() => navigate('/profile/edit')} />
                 <div style={{ height: '1px', background: '#f5f5f5', margin: '0 16px' }} />
-                <MenuItem icon={<Settings size={20} />} label="앱 설정 및 계정 관리" />
+                <MenuItem icon={<Settings size={20} />} label="설정" onClick={() => navigate('/settings')} />
             </div>
 
         </div>

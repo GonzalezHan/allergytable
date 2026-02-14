@@ -1,14 +1,14 @@
 export const allergensList = [
-    { id: 'egg', name: '계란', icon: '🥚', activeName: 'Egg' },
-    { id: 'peanut', name: '땅콩', icon: '🥜', activeName: 'Peanut' },
-    { id: 'dairy', name: '유제품', icon: '🥛', activeName: 'Dairy' },
-    { id: 'wheat', name: '밀', icon: '🌾', activeName: 'Wheat' },
-    { id: 'soy', name: '대두', icon: '🫘', activeName: 'Soy' },
-    { id: 'shellfish', name: '갑각류', icon: '🦐', activeName: 'Shellfish' },
-    { id: 'fish', name: '생선', icon: '🐟', activeName: 'Fish' },
-    { id: 'crab', name: '게', icon: '🦀', activeName: 'Crab' },
-    { id: 'fruit', name: '과일', icon: '🍇', activeName: 'Fruit' },
-    { id: 'other', name: '기타', icon: '🥗', activeName: 'Other' },
+    { id: 'egg', name: '계란', icon: '🥚', activeName: 'Egg', enName: 'Egg', jaName: '卵', zhName: '鸡蛋' },
+    { id: 'peanut', name: '땅콩', icon: '🥜', activeName: 'Peanut', enName: 'Peanut', jaName: 'ピーナッツ', zhName: '花生' },
+    { id: 'dairy', name: '유제품', icon: '🥛', activeName: 'Dairy', enName: 'Dairy', jaName: '乳製品', zhName: '乳制品' },
+    { id: 'wheat', name: '밀', icon: '🌾', activeName: 'Wheat', enName: 'Wheat', jaName: '小麦', zhName: '小麦' },
+    { id: 'soy', name: '대두', icon: '🫘', activeName: 'Soy', enName: 'Soy', jaName: '大豆', zhName: '大豆' },
+    { id: 'shellfish', name: '갑각류', icon: '🦐', activeName: 'Shellfish', enName: 'Shellfish', jaName: '甲殻類', zhName: '甲壳类' },
+    { id: 'fish', name: '생선', icon: '🐟', activeName: 'Fish', enName: 'Fish', jaName: '魚', zhName: '鱼' },
+    { id: 'crab', name: '게', icon: '🦀', activeName: 'Crab', enName: 'Crab', jaName: 'カニ', zhName: '蟹' },
+    { id: 'fruit', name: '과일', icon: '🍇', activeName: 'Fruit', enName: 'Fruit', jaName: '果物', zhName: '水果' },
+    { id: 'other', name: '기타', icon: '🥗', activeName: 'Other', enName: 'Other', jaName: 'その他', zhName: '其他' },
 ];
 
 export const severityLevels = [

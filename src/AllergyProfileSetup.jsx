@@ -6,20 +6,11 @@ import './index.css';
 
 import { allergensList as allergenOptions, severityLevels } from './data';
 
-const AllergyProfileSetup = ({ onBack, onSave, initialAllergies = [], initialSeverity = 'warning' }) => {
+const AllergyProfileSetup = ({ onBack, onSave, initialAllergies = [], initialSeverity = 'warning', initialName = '' }) => {
     const navigate = useNavigate();
-    const { logout } = useAuth();
     const [selectedAllergies, setSelectedAllergies] = useState(initialAllergies);
     const [severity, setSeverity] = useState(initialSeverity);
-
-    const handleLogout = async () => {
-        try {
-            await logout();
-            navigate('/login', { replace: true });
-        } catch (error) {
-            console.error("Failed to log out", error);
-        }
-    };
+    const [name, setName] = useState(initialName);
 
     const toggleAllergy = (id) => {
         setSelectedAllergies(prev =>
@@ -28,7 +19,7 @@ const AllergyProfileSetup = ({ onBack, onSave, initialAllergies = [], initialSev
     };
 
     const handleSave = () => {
-        onSave && onSave({ allergies: selectedAllergies, severity });
+        onSave && onSave({ name, allergies: selectedAllergies, severity });
     };
 
     return (
@@ -38,13 +29,27 @@ const AllergyProfileSetup = ({ onBack, onSave, initialAllergies = [], initialSev
                 <button className="back-button" onClick={onBack}>
                     <ChevronLeft size={24} />
                 </button>
-                <h1>나의 알러지 프로필</h1>
-                <button className="logout-button" onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}>
-                    <LogOut size={20} />
-                </button>
+                <h1>프로필 수정</h1>
+                <div style={{ width: 24 }}></div> {/* Spacer for cleanup */}
             </header>
 
             <div className="profile-content">
+                
+                {/* Name Input Section */}
+                <div style={{ marginBottom: '24px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#333', marginBottom: '8px' }}>이름 (닉네임)</label>
+                    <input 
+                        type="text" 
+                        value={name} 
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="이름을 입력하세요"
+                        style={{ 
+                            width: '100%', padding: '12px 16px', borderRadius: '12px', 
+                            border: '1px solid #ddd', fontSize: '16px', outline: 'none'
+                        }}
+                    />
+                </div>
+
                 <p className="profile-subtitle">
                     안전한 외식을 위해 알러지 정보를 등록해주세요
                 </p>
@@ -93,9 +98,9 @@ const AllergyProfileSetup = ({ onBack, onSave, initialAllergies = [], initialSev
                 <button
                     className="save-profile-btn"
                     onClick={handleSave}
-                    disabled={selectedAllergies.length === 0}
+                    disabled={selectedAllergies.length === 0 || !name.trim()}
                 >
-                    프로필 저장하기
+                    저장하기
                 </button>
             </div>
         </div>
