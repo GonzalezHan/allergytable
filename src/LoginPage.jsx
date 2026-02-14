@@ -6,12 +6,81 @@ import Footer from './components/Footer';
 import './index.css';
 
 const LoginPage = () => {
-    // ... existing hook calls ...
     const { loginWithGoogle, loginWithKakao, loginWithNaver, loginAsGuest, currentUser } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
-    // ... existing code ...
+    useEffect(() => {
+        // Initialize Kakao SDK
+        if (window.Kakao && !window.Kakao.isInitialized()) {
+            window.Kakao.init('6758187da106ac91415a4fc813c1edde');
+        }
+
+        // Initialize Naver Login
+        if (window.naver) {
+            const naverLogin = new window.naver.LoginWithNaverId({
+                clientId: "iKV15NQlHWQqWRk2xId8",
+                callbackUrl: window.location.origin + "/login",
+                isPopup: false,
+                loginButton: { color: "green", type: 3, height: 60 },
+                auth_type: 'reauthenticate'
+            });
+            naverLogin.init();
+
+            // Handle Naver callback directly (especially on page load with hash)
+            naverLogin.getLoginStatus((status) => {
+                if (status) {
+                    // CRITICAL: Only auto-login if we have a hash (returning from redirect)
+                    // This prevents the logout loop where the cookie session triggers auto-login on the login page
+                    if (window.location.hash) {
+                        const user = naverLogin.user;
+                        console.log('Naver login success', user);
+                        loginWithNaver(user);
+
+                        // Clear the hash to prevent auto-login loop after logout
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                }
+            });
+        }
+    }, [loginWithNaver]);
+
+    // Redirect if already logged in (ignore guests to allow them to log in for real)
+    useEffect(() => {
+        if (currentUser && !currentUser.isGuest) {
+            const from = location.state?.from?.pathname || "/";
+            navigate(from, { replace: true });
+        }
+    }, [currentUser, navigate, location]);
+
+    const handleGoogleLogin = async () => {
+        try {
+            await loginWithGoogle();
+        } catch (error) {
+            console.error("Google login failed", error);
+            alert("Google 로그인에 실패했습니다.");
+        }
+    };
+
+    const handleKakaoLogin = async () => {
+        try {
+            await loginWithKakao();
+        } catch (error) {
+            console.error('Kakao login failed', error);
+            alert('카카오 로그인 중 오류가 발생했습니다.');
+        }
+    };
+
+    const handleNaverLogin = () => {
+        const naverBtn = document.getElementById('naverIdLogin_loginButton');
+        if (naverBtn) naverBtn.click();
+        else loginWithNaver(); // Fallback to mock if SDK button not found
+    };
+
+    const handleGuestContinue = () => {
+        loginAsGuest();
+        navigate('/', { replace: true });
+    };
 
     return (
         <div className="login-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', justifyContent: 'space-between' }}>
