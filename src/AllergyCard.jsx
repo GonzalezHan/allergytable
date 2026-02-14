@@ -113,7 +113,7 @@ const AllergyCard = ({ user = { name: "김라연", birthDate: "2001.03.22" }, al
           height: '100%',
           backfaceVisibility: 'hidden',
           borderRadius: '24px',
-          background: 'linear-gradient(135deg, #FFF0ED 0%, #FFFBE6 100%)', // Pastel Warm Hybrid
+          background: 'linear-gradient(135deg, var(--primary-light) 0%, #FFFBE6 100%)', // Pastel Warm Hybrid
           border: '1px solid rgba(0,0,0,0.05)',
           boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px', boxSizing: 'border-box',
@@ -122,7 +122,7 @@ const AllergyCard = ({ user = { name: "김라연", birthDate: "2001.03.22" }, al
           {/* Header */}
           <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
              <div style={{ display:'flex', alignItems:'center', gap:'6px' }}>
-                <img src="/logo.png" alt="Logo" style={{ width: '24px', height: '24px' }} />
+                <img src="/logo.png" alt="Logo" style={{ width: '24px', height: '24px', mixBlendMode: 'multiply' }} />
                 <span style={{ fontSize: '14px', fontWeight: 700, color: '#333' }}>알러지 알림 카드</span>
              </div>
              <ShieldCheck size={20} color="var(--safe-green)" />
@@ -252,8 +252,8 @@ const AllergyCard = ({ user = { name: "김라연", birthDate: "2001.03.22" }, al
                      dangerouslySetInnerHTML={{ __html: displayMessage.replace(/\n/g, '<br/>') }} />
             </div>
 
-            <div style={{ background: '#FFF0ED', padding: '16px', borderRadius: '12px', marginBottom: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: 'var(--primary-color)', fontWeight: 700 }}>
+            <div style={{ background: 'var(--primary-light)', padding: '16px', borderRadius: '12px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: 'var(--danger-red)', fontWeight: 700 }}>
                     <ShieldCheck size={18} />
                     <span style={{ fontSize: '14px' }}>{currentUI.warningTitle}</span>
                 </div>
@@ -261,7 +261,7 @@ const AllergyCard = ({ user = { name: "김라연", birthDate: "2001.03.22" }, al
                     {selectedAllergens.map(a => (
                         <span key={a.id} style={{ 
                             background: 'white', padding: '6px 10px', borderRadius: '8px', 
-                            fontSize: '14px', fontWeight: 600, border: '1px solid #ffccc7',
+                            fontSize: '14px', fontWeight: 600, border: '1px solid var(--primary-color)',
                             display: 'flex', alignItems: 'center', gap: '4px'
                         }}>
                             {a.icon} 

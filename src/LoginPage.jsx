@@ -85,7 +85,7 @@ const LoginPage = () => {
             {/* Logo Section */}
             <div className="login-header">
                 <div className="login-logo" style={{ background: 'transparent' }}>
-                    <img src="/logo.png" alt="AllergyTable Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <img src="/logo.png" alt="AllergyTable Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
                 </div>
                 <h1 className="login-title">알러지테이블</h1>
                 <p className="login-tagline">안심 외식의 시작</p>
