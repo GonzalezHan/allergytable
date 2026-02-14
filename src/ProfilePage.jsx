@@ -32,7 +32,7 @@ const ProfilePage = () => {
         if (currentUser) {
             // Check if we need to sync
             const isDefaultName = user.name === "김라연";
-            const isEmailMismatch = user.email !== currentUser.email;
+            const isEmailMismatch = currentUser.email && (user.email !== currentUser.email);
 
             if (isDefaultName || isEmailMismatch) {
                 console.log("Syncing profile with SSO data...");
