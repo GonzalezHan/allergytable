@@ -14,6 +14,9 @@ const MapView = ({ restaurants = [] }) => {
     });
     const [myLocation, setMyLocation] = useState(null);
     const [selectedFilters, setSelectedFilters] = useState([]);
+    
+    // State for Real Data from Kakao API
+    const [realRestaurants, setRealRestaurants] = useState([]);
 
     // Modern SDK loading
     const { loading: sdkLoading, error: sdkError } = useKakaoLoader({
@@ -40,6 +43,46 @@ const MapView = ({ restaurants = [] }) => {
         }
     }, []);
 
+    // 2. Fetch Real Places from Kakao API when center changes
+    useEffect(() => {
+        if (!sdkLoading && window.kakao && window.kakao.maps && window.kakao.maps.services) {
+            const ps = new window.kakao.maps.services.Places();
+            
+            // Search for "Food" category (FD6) around the center
+            ps.categorySearch('FD6', (data, status) => {
+                if (status === window.kakao.maps.services.Status.OK) {
+                    const mappedData = data.map((place, index) => ({
+                        id: place.id, // Use Kakao Place ID
+                        name: place.place_name,
+                        position: [parseFloat(place.y), parseFloat(place.x)],
+                        type: place.category_name.split('>').pop().trim() || '음식점',
+                        distance: place.distance ? `${place.distance}m` : '가까움',
+                        address: place.road_address_name || place.address_name,
+                        phone: place.phone,
+                        url: place.place_url,
+                        // --- MOCK DATA FOR DEMO (Since API doesn't provide these) ---
+                        rating: (3.5 + Math.random() * 1.5).toFixed(1), // Random 3.5 ~ 5.0
+                        reviewCount: Math.floor(Math.random() * 500) + 10,
+                        // Randomly assign 1~3 safe allergens for demo purposes
+                        safeFor: allergensList
+                            .sort(() => 0.5 - Math.random())
+                            .slice(0, Math.floor(Math.random() * 3) + 1)
+                            .map(a => a.id),
+                        image: 'https://cdn-icons-png.flaticon.com/512/3075/3075977.png' // Default food icon
+                    }));
+                    console.log("Fetched Real Places:", mappedData);
+                    setRealRestaurants(mappedData);
+                } else {
+                    console.warn("Kakao Places Search failed or returned no results:", status);
+                }
+            }, {
+                location: new window.kakao.maps.LatLng(state.center.lat, state.center.lng),
+                radius: 2000, // 2km radius
+                sort: window.kakao.maps.services.SortBy.DISTANCE
+            });
+        }
+    }, [state.center, sdkLoading]);
+
     const moveToMyLocation = () => {
         if (myLocation) {
             setState({ center: myLocation, isPanto: true });
@@ -57,8 +100,13 @@ const MapView = ({ restaurants = [] }) => {
         setSelectedId(null);
     };
 
-    const filteredRestaurants = restaurants.filter(res => {
+    // Use Real Data if available, otherwise User Mock Data
+    const dataToDisplay = realRestaurants.length > 0 ? realRestaurants : restaurants;
+
+    const filteredRestaurants = dataToDisplay.filter(res => {
         if (selectedFilters.length === 0) return true;
+        // Check if restaurant is safe for ALL selected allergens
+        // For real data, 'safeFor' is simulated
         return selectedFilters.every(filterId => res.safeFor.includes(filterId));
     });
 
@@ -96,7 +144,7 @@ const MapView = ({ restaurants = [] }) => {
                     </button>
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', color: '#999' }}>
                         <Search size={20} />
-                        <span style={{ fontSize: '15px' }}>찾고 있는 맛집이 있나요?</span>
+                        <span style={{ fontSize: '15px' }}>{realRestaurants.length > 0 ? `${realRestaurants.length}곳의 맛집 발견` : "맛집 검색..."}</span>
                     </div>
                     <button style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}>
                         <Menu size={24} color="#333" />
@@ -279,7 +327,7 @@ const MapView = ({ restaurants = [] }) => {
                 {/* Content */}
                 {selectedId ? (
                     (() => {
-                        const res = restaurants.find(r => r.id === selectedId);
+                        const res = dataToDisplay.find(r => r.id === selectedId);
                         return (
                             <div onClick={() => navigate(`/restaurant/${selectedId}`)} style={{ padding: '0 20px 20px', cursor: 'pointer' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -304,8 +352,13 @@ const MapView = ({ restaurants = [] }) => {
                                     </div>
                                 </div>
                                 
+                                {/* Info Box with Address if image is generic */}
+                                <div style={{ marginTop: '8px', fontSize: '13px', color: '#888' }}>
+                                    {res?.address || "주소 정보 없음"}
+                                </div>
+
                                 <div style={{ marginTop: '16px', display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-                                    {res?.safeFor.map(safe => {
+                                    {res?.safeFor?.map(safe => {
                                         const allergen = allergensList.find(a => a.id === safe);
                                         return allergen && (
                                             <span key={safe} style={{ 
