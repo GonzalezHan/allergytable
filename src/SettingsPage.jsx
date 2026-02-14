@@ -1,11 +1,12 @@
-import React from 'react';
-import { ChevronLeft, LogOut, Bell, Shield, CircleHelp, FileText, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronLeft, LogOut, Bell, Shield, CircleHelp, FileText, User, ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
 const SettingsPage = () => {
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { logout, currentUser } = useAuth();
+    const [showAccountInfo, setShowAccountInfo] = useState(false);
     
     const handleLogout = async () => {
         if (window.confirm('정말 로그아웃 하시겠습니까?')) {
@@ -18,7 +19,7 @@ const SettingsPage = () => {
         }
     };
 
-    const SettingItem = ({ icon, label, onClick, isDestructive = false }) => (
+    const SettingItem = ({ icon, label, onClick, isDestructive = false, showArrow = true }) => (
         <div onClick={onClick} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '16px 20px', background: 'white',
@@ -28,7 +29,7 @@ const SettingsPage = () => {
                 <div style={{ color: isDestructive ? '#ff4f4f' : '#333' }}>{icon}</div>
                 <span style={{ fontSize: '15px', color: isDestructive ? '#ff4f4f' : '#333', fontWeight: 500 }}>{label}</span>
             </div>
-            <div style={{ color: '#ccc' }}>›</div>
+            {showArrow && <div style={{ color: '#ccc' }}>›</div>}
         </div>
     );
 
@@ -47,16 +48,43 @@ const SettingsPage = () => {
             {/* Account Section */}
             <div style={{ padding: '20px 20px 8px', fontSize: '13px', fontWeight: 600, color: '#888' }}>계정 관리</div>
             <SettingItem icon={<User size={20} />} label="프로필 수정" onClick={() => navigate('/profile/edit')} />
-            <SettingItem icon={<Shield size={20} />} label="계정 및 보안" />
+            
+            {/* Account & Security - Expandable */}
+            <SettingItem 
+                icon={<Shield size={20} />} 
+                label="계정 및 보안" 
+                onClick={() => setShowAccountInfo(!showAccountInfo)}
+                showArrow={false}
+            />
+            {showAccountInfo && (
+                 <div style={{ padding: '0 20px 20px', background: 'white', borderBottom: '1px solid #f5f5f5' }}>
+                    <div style={{ padding: '16px', background: '#F8F9FA', borderRadius: '12px', fontSize: '14px', color: '#444' }}>
+                        <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#888' }}>이름</span>
+                            <span style={{ fontWeight: 600 }}>{currentUser?.displayName || '정보 없음'}</span>
+                        </div>
+                        {currentUser?.email && (
+                            <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ color: '#888' }}>이메일</span>
+                                <span style={{ fontWeight: 600 }}>{currentUser.email}</span>
+                            </div>
+                        )}
+                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: '#888' }}>로그인 구분</span>
+                            <span style={{ fontWeight: 600, color: 'var(--primary-color)' }}>
+                                {currentUser?.isGuest ? '게스트 로그인' : 'SSO 연동 계정'}
+                            </span>
+                        </div>
+                    </div>
+                 </div>
+            )}
+
             <SettingItem icon={<Bell size={20} />} label="알림 설정" />
 
-            {/* App Info Section */}
-            <div style={{ padding: '20px 20px 8px', fontSize: '13px', fontWeight: 600, color: '#888' }}>앱 정보</div>
-            <SettingItem icon={<CircleHelp size={20} />} label="고객센터 / 도움말" />
-            <SettingItem icon={<FileText size={20} />} label="이용약관 및 개인정보처리방침" />
-            <div style={{ padding: '16px 20px', fontSize: '13px', color: '#999', textAlign: 'center' }}>
-                현재 버전 1.0.0
-            </div>
+            {/* Info Section */}
+            <div style={{ padding: '20px 20px 8px', fontSize: '13px', fontWeight: 600, color: '#888' }}>정보</div>
+            <SettingItem icon={<CircleHelp size={20} />} label="고객센터 / 도움말" onClick={() => navigate('/settings/help')} />
+            <SettingItem icon={<FileText size={20} />} label="이용약관 및 개인정보처리방침" onClick={() => navigate('/settings/terms')} />
 
             {/* Logout */}
             <div style={{ marginTop: '20px' }}>

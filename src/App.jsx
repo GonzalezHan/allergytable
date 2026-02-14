@@ -300,6 +300,9 @@ function MapViewWrapper() {
 
 import SettingsPage from './SettingsPage'
 
+import TermsPage from './TermsPage'
+import HelpPage from './HelpPage'
+
 function App() {
     return (
         <AuthProvider>
@@ -314,6 +317,8 @@ function App() {
                         <Route path="/profile" element={<RequireAuth><ProfilePageWrapper /></RequireAuth>} />
                         <Route path="/profile/edit" element={<RequireAuth><AllergyProfileSetupWrapper /></RequireAuth>} />
                         <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
+                        <Route path="/settings/terms" element={<RequireAuth><TermsPage /></RequireAuth>} />
+                        <Route path="/settings/help" element={<RequireAuth><HelpPage /></RequireAuth>} />
                         <Route path="/restaurant/:id" element={<RequireAuth allowGuest={true}><RestaurantDetailWrapper /></RequireAuth>} />
                         <Route path="/reservation-success" element={<RequireAuth allowGuest={true}><ReservationSuccess /></RequireAuth>} />
                         <Route path="/map" element={<RequireAuth allowGuest={true}><MapViewWrapper /></RequireAuth>} />
