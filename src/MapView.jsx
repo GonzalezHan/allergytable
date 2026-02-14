@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Map, MapMarker, CustomOverlayMap, useKakaoLoader } from 'react-kakao-maps-sdk'
+import { Map, MapMarker, CustomOverlayMap, MarkerClusterer, useKakaoLoader } from 'react-kakao-maps-sdk'
+
 import { ChevronLeft, Search, Menu, Crosshair, List, Star, Check } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { allergensList } from './data'
@@ -224,41 +225,46 @@ const MapView = ({ restaurants = [] }) => {
                     />
                 )}
 
-                {/* Restaurants */}
-                {filteredRestaurants.map((res) => {
-                    const isSelected = res.id === selectedId;
-                    return (
-                        <MapMarker
-                            key={res.id}
-                            position={{ lat: res.position[0], lng: res.position[1] }}
-                            onClick={() => setSelectedId(isSelected ? null : res.id)}
-                            image={{
-                                src: isSelected 
-                                    ? 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png' // Larger on selection (simulated)
-                                    : 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png',
-                                size: isSelected ? { width: 48, height: 48 } : { width: 36, height: 36 }
-                            }}
-                        >
-                            {/* Label Overlay for Selected Marker */}
-                            {isSelected && (
-                                <div style={{
-                                    padding: '4px 8px',
-                                    background: 'white',
-                                    borderRadius: '12px',
-                                    fontSize: '12px',
-                                    fontWeight: 'bold',
-                                    color: '#333',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                                    marginBottom: '8px',
-                                    textAlign: 'center',
-                                    whiteSpace: 'nowrap'
-                                }}>
-                                    {res.name}
-                                </div>
-                            )}
-                        </MapMarker>
-                    );
-                })}
+                {/* Restaurants with Clustering */}
+                <MarkerClusterer
+                    averageCenter={true} // Cluster will be positioned at the average of contained markers
+                    minLevel={6} // Create clusters when map level is greater than this
+                >
+                    {filteredRestaurants.map((res) => {
+                        const isSelected = res.id === selectedId;
+                        return (
+                            <MapMarker
+                                key={res.id}
+                                position={{ lat: res.position[0], lng: res.position[1] }}
+                                onClick={() => setSelectedId(isSelected ? null : res.id)}
+                                image={{
+                                    src: isSelected 
+                                        ? 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png' // Larger on selection (simulated)
+                                        : 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png',
+                                    size: isSelected ? { width: 48, height: 48 } : { width: 36, height: 36 }
+                                }}
+                            >
+                                {/* Label Overlay for Selected Marker */}
+                                {isSelected && (
+                                    <div style={{
+                                        padding: '4px 8px',
+                                        background: 'white',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        fontWeight: 'bold',
+                                        color: '#333',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                        marginBottom: '8px',
+                                        textAlign: 'center',
+                                        whiteSpace: 'nowrap'
+                                    }}>
+                                        {res.name}
+                                    </div>
+                                )}
+                            </MapMarker>
+                        );
+                    })}
+                </MarkerClusterer>
 
                 {/* Info Window (Custom Overlay) - Kept for fallback, but main info is now in Bottom Sheet/Card */}
             </Map>
