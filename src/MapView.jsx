@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Map, MapMarker, CustomOverlayMap, MarkerClusterer, useKakaoLoader } from 'react-kakao-maps-sdk'
-
-import { ChevronLeft, Search, Menu, Crosshair, List, Star, Check } from 'lucide-react'
+import { ChevronLeft, Search, Menu, Crosshair, List, Map as MapIcon, Star, Check } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { allergensList } from './data'
 import './index.css'
@@ -15,6 +14,7 @@ const MapView = ({ restaurants = [] }) => {
     });
     const [myLocation, setMyLocation] = useState(null);
     const [selectedFilters, setSelectedFilters] = useState([]);
+    const [isListView, setIsListView] = useState(false);
     
     // State for Real Data from Kakao API
     const [realRestaurants, setRealRestaurants] = useState([]);
@@ -121,19 +121,22 @@ const MapView = ({ restaurants = [] }) => {
             <div style={{
                 position: 'absolute',
                 top: 0, left: 0, right: 0,
-                zIndex: 20,
+                zIndex: 40, // Higher than map and overlays
                 padding: '16px 16px 0 16px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
-                pointerEvents: 'none' // Let clicks pass through empty areas
+                pointerEvents: 'none',
+                background: isListView ? 'white' : 'transparent', // Full white bg for Header in List Mode
+                transition: 'background 0.3s ease'
             }}>
                 {/* Search Bar */}
                 <div style={{
                     pointerEvents: 'auto',
                     background: 'white',
                     borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    boxShadow: isListView ? 'none' : '0 4px 12px rgba(0,0,0,0.1)',
+                    border: isListView ? '1px solid #eee' : 'none',
                     height: '48px',
                     display: 'flex',
                     alignItems: 'center',
@@ -159,7 +162,7 @@ const MapView = ({ restaurants = [] }) => {
                     gap: '8px',
                     overflowX: 'auto',
                     paddingBottom: '8px',
-                    marginLeft: '-4px', paddingLeft: '4px', // Visual adjustment for shadow clipping
+                    marginLeft: '-4px', paddingLeft: '4px',
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none'
                 }}>
@@ -206,7 +209,64 @@ const MapView = ({ restaurants = [] }) => {
                 </div>
             </div>
 
+            {/* --- LIST VIEW OVERLAY --- */}
+            {isListView && (
+                <div style={{
+                    position: 'absolute',
+                    top: '110px', // Below header
+                    left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'white',
+                    zIndex: 35,
+                    overflowY: 'auto',
+                    padding: '0 16px 80px 16px' // Bottom padding for FAB
+                }}>
+                    <div style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
+                        현재 지도 반경 내 <strong style={{color:'#333'}}>{filteredRestaurants.length}개</strong>의 식당이 있어요
+                    </div>
+                    
+                    {filteredRestaurants.map(res => (
+                        <div key={res.id} onClick={() => navigate(`/restaurant/${res.id}`)} style={{
+                            display: 'flex',
+                            gap: '16px',
+                            marginBottom: '16px',
+                            borderBottom: '1px solid #eee',
+                            paddingBottom: '16px',
+                            cursor: 'pointer'
+                        }}>
+                             <img src={res.image} alt={res.name} style={{ width: '100px', height: '100px', borderRadius: '8px', objectFit: 'cover', background:'#f0f0f0' }} />
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
+                                    <h4 style={{ margin: '0 0 4px', fontSize: '16px' }}>{res.name}</h4>
+                                    <span style={{ fontSize:'12px', color:'var(--primary-color)', fontWeight:600}}>{res.distance}</span>
+                                </div>
+                                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '8px' }}>{res.address}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-secondary)', marginBottom:'8px' }}>
+                                    <Star size={12} fill="var(--warning-yellow)" color="var(--warning-yellow)" />
+                                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{res.rating}</span>
+                                    <span>({res.reviewCount})</span>
+                                    <span>· {res.type}</span>
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                    {res.safeFor && res.safeFor.map(aid => (
+                                        <span key={aid} style={{ fontSize: '11px', backgroundColor: 'var(--safe-bg)', color: 'var(--safe-green)', padding: '2px 6px', borderRadius: '4px' }}>
+                                            {allergensList.find(a => a.id === aid)?.name} 안심
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                    
+                    {filteredRestaurants.length === 0 && (
+                         <div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>
+                            검색 결과가 없습니다.
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* --- 2. Map Instance --- */}
+            {/* Always rendered but hidden via z-index when list view is active */}
             <Map
                 center={state.center}
                 isPanto={state.isPanto}
@@ -265,139 +325,144 @@ const MapView = ({ restaurants = [] }) => {
                         );
                     })}
                 </MarkerClusterer>
-
-                {/* Info Window (Custom Overlay) - Kept for fallback, but main info is now in Bottom Sheet/Card */}
             </Map>
 
             {/* --- 3. Floating Controls (Bottom) --- */}
-            {/* My Location (Bottom-Left) */}
-            <button
-                onClick={moveToMyLocation}
-                style={{
-                    position: 'absolute',
-                    bottom: selectedId ? '240px' : '100px', // Adjust based on sheet height
-                    left: '16px',
-                    zIndex: 20,
-                    width: '44px', height: '44px',
-                    borderRadius: '50%',
-                    background: 'white',
-                    border: '1px solid #eee',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'bottom 0.3s ease'
-                }}
-            >
-                <Crosshair size={22} color={myLocation ? "var(--primary-color)" : "#666"} />
-            </button>
+            {/* My Location (Bottom-Left) - Hide in List View */}
+            {!isListView && (
+                <button
+                    onClick={moveToMyLocation}
+                    style={{
+                        position: 'absolute',
+                        bottom: selectedId ? '240px' : '100px', // Adjust based on sheet height
+                        left: '16px',
+                        zIndex: 20,
+                        width: '44px', height: '44px',
+                        borderRadius: '50%',
+                        background: 'white',
+                        border: '1px solid #eee',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer',
+                        transition: 'bottom 0.3s ease'
+                    }}
+                >
+                    <Crosshair size={22} color={myLocation ? "var(--primary-color)" : "#666"} />
+                </button>
+            )}
 
-            {/* List View (Bottom-Right) */}
+            {/* List View Toggle (Bottom-Right) - Always Visible */}
             <button
+                onClick={() => setIsListView(!isListView)}
                 style={{
                     position: 'absolute',
-                    bottom: selectedId ? '240px' : '100px', // Adjust based on sheet height
+                    bottom: (selectedId && !isListView) ? '240px' : '100px', // Adjust position based on sheet/list
                     right: '16px',
-                    zIndex: 20,
+                    zIndex: 50, // Highest priority
                     padding: '10px 16px',
                     borderRadius: '24px',
-                    background: 'white',
-                    border: '1px solid #eee',
+                    background: isListView ? '#333' : 'white',
+                    border: isListView ? 'none' : '1px solid #eee',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                     display: 'flex', alignItems: 'center', gap: '6px',
                     cursor: 'pointer',
-                    transition: 'bottom 0.3s ease'
+                    transition: 'all 0.3s ease',
+                    color: isListView ? 'white' : '#333'
                 }}
             >
-                <List size={18} color="#333" />
-                <span style={{ fontSize: '13px', fontWeight: 600, color: '#333' }}>목록</span>
+                {isListView ? <MapIcon size={18} /> : <List size={18} />}
+                <span style={{ fontSize: '13px', fontWeight: 600 }}>{isListView ? '지도' : '목록'}</span>
             </button>
 
             {/* --- 4. Bottom Sheet (Restaurant Info or Summary) --- */}
-            <div style={{
-                position: 'absolute',
-                bottom: 0, left: 0, right: 0,
-                zIndex: 30,
-                background: 'white',
-                borderTopLeftRadius: '20px',
-                borderTopRightRadius: '20px',
-                boxShadow: '0 -4px 16px rgba(0,0,0,0.1)',
-                transform: selectedId ? 'translateY(0)' : 'translateY(100%)', // Show only when selected for now, or maintain mini-sheet
-                transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                paddingBottom: '20px' // Safe area
-            }}>
-                {/* Drag Handle */}
-                <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '12px' }}>
-                    <div style={{ width: '40px', height: '4px', background: '#ddd', borderRadius: '2px' }} />
-                </div>
+            {/* Hide Bottom Sheet in List View */}
+            {!isListView && (
+                <div style={{
+                    position: 'absolute',
+                    bottom: 0, left: 0, right: 0,
+                    zIndex: 30,
+                    background: 'white',
+                    borderTopLeftRadius: '20px',
+                    borderTopRightRadius: '20px',
+                    boxShadow: '0 -4px 16px rgba(0,0,0,0.1)',
+                    transform: selectedId ? 'translateY(0)' : 'translateY(100%)', // Show only when selected for now, or maintain mini-sheet
+                    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    paddingBottom: '20px' // Safe area
+                }}>
+                    {/* Drag Handle */}
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '12px' }}>
+                        <div style={{ width: '40px', height: '4px', background: '#ddd', borderRadius: '2px' }} />
+                    </div>
 
-                {/* Content */}
-                {selectedId ? (
-                    (() => {
-                        const res = dataToDisplay.find(r => r.id === selectedId);
-                        return (
-                            <div onClick={() => navigate(`/restaurant/${selectedId}`)} style={{ padding: '0 20px 20px', cursor: 'pointer' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <div>
-                                        <h2 style={{ fontSize: '20px', fontWeight: 700, margin: '0 0 4px' }}>{res?.name}</h2>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#666', fontSize: '14px' }}>
-                                            <span style={{ color: 'var(--primary-color)', fontWeight: 600 }}>{res?.rating}</span>
-                                            <div style={{ display: 'flex' }}>
-                                                {[...Array(5)].map((_, i) => (
-                                                    <Star key={i} size={12} fill={i < Math.floor(res?.rating || 0) ? "#FFD700" : "#ddd"} color="none" />
-                                                ))}
+                    {/* Content */}
+                    {selectedId ? (
+                        (() => {
+                            const res = dataToDisplay.find(r => r.id === selectedId);
+                            return (
+                                <div onClick={() => navigate(`/restaurant/${selectedId}`)} style={{ padding: '0 20px 20px', cursor: 'pointer' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div>
+                                            <h2 style={{ fontSize: '20px', fontWeight: 700, margin: '0 0 4px' }}>{res?.name}</h2>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#666', fontSize: '14px' }}>
+                                                <span style={{ color: 'var(--primary-color)', fontWeight: 600 }}>{res?.rating}</span>
+                                                <div style={{ display: 'flex' }}>
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star key={i} size={12} fill={i < Math.floor(res?.rating || 0) ? "#FFD700" : "#ddd"} color="none" />
+                                                    ))}
+                                                </div>
+                                                <span>({res?.reviewCount})</span>
+                                                <span>· {res?.distance}</span>
                                             </div>
-                                            <span>({res?.reviewCount})</span>
-                                            <span>· {res?.distance}</span>
+                                        </div>
+                                        <div style={{ 
+                                            width: '40px', height: '40px', borderRadius: '50%', background: '#Ffeeec', 
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                                        }}>
+                                            <Check size={20} color="var(--primary-color)" />
                                         </div>
                                     </div>
-                                    <div style={{ 
-                                        width: '40px', height: '40px', borderRadius: '50%', background: '#Ffeeec', 
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center' 
-                                    }}>
-                                        <Check size={20} color="var(--primary-color)" />
+                                    
+                                    {/* Info Box with Address if image is generic */}
+                                    <div style={{ marginTop: '8px', fontSize: '13px', color: '#888' }}>
+                                        {res?.address || "주소 정보 없음"}
                                     </div>
-                                </div>
-                                
-                                {/* Info Box with Address if image is generic */}
-                                <div style={{ marginTop: '8px', fontSize: '13px', color: '#888' }}>
-                                    {res?.address || "주소 정보 없음"}
-                                </div>
 
-                                <div style={{ marginTop: '16px', display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-                                    {res?.safeFor?.map(safe => {
-                                        const allergen = allergensList.find(a => a.id === safe);
-                                        return allergen && (
-                                            <span key={safe} style={{ 
-                                                fontSize: '12px', background: '#f5f5f5', color: '#555', 
-                                                padding: '6px 10px', borderRadius: '8px', whiteSpace: 'nowrap' 
-                                            }}>
-                                                {allergen.icon} {allergen.name}안심
-                                            </span>
-                                        );
-                                    })}
-                                </div>
+                                    <div style={{ marginTop: '16px', display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                                        {res?.safeFor?.map(safe => {
+                                            const allergen = allergensList.find(a => a.id === safe);
+                                            return allergen && (
+                                                <span key={safe} style={{ 
+                                                    fontSize: '12px', background: '#f5f5f5', color: '#555', 
+                                                    padding: '6px 10px', borderRadius: '8px', whiteSpace: 'nowrap' 
+                                                }}>
+                                                    {allergen.icon} {allergen.name}안심
+                                                </span>
+                                            );
+                                        })}
+                                    </div>
 
-                                <button style={{
-                                    marginTop: '20px', width: '100%', padding: '14px',
-                                    background: 'var(--primary-color)', color: 'white',
-                                    border: 'none', borderRadius: '12px',
-                                    fontSize: '15px', fontWeight: 600, cursor: 'pointer'
-                                }}>
-                                    상세보기 및 예약하기
-                                </button>
-                            </div>
-                        );
-                    })()
-                ) : (
-                    // Default State (When nothing selected) - Mini Sheet
-                    <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
-                         <p>지도를 움직여 안심 식당을 찾아보세요</p>
-                    </div>
-                )}
-            </div>
+                                    <button style={{
+                                        marginTop: '20px', width: '100%', padding: '14px',
+                                        background: 'var(--primary-color)', color: 'white',
+                                        border: 'none', borderRadius: '12px',
+                                        fontSize: '15px', fontWeight: 600, cursor: 'pointer'
+                                    }}>
+                                        상세보기 및 예약하기
+                                    </button>
+                                </div>
+                            );
+                        })()
+                    ) : (
+                        // Default State (When nothing selected) - Mini Sheet
+                        <div style={{ padding: '20px', textAlign: 'center', color: '#888' }}>
+                             <p>지도를 움직여 안심 식당을 찾아보세요</p>
+                        </div>
+                    )}
+                </div>
+            )}
             
-            {/* Show simple banner when nothing selected to mimic reference "Nearby" */}
-            {!selectedId && (
+            {/* Show simple banner when nothing selected to mimic reference "Nearby" - Hide in List View */}
+            {(!selectedId && !isListView) && (
                  <div style={{
                     position: 'absolute',
                     bottom: '80px', // Above nav
