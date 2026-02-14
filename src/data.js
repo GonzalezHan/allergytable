@@ -26,6 +26,13 @@ export const categories = [
     { id: 'vegan', name: '비건', icon: '🥗' },
 ];
 
+export const translationTemplates = {
+    'KO': "죄송하지만,\n저는 <span style='color: var(--primary-color)'>심각한 알러지</span>가\n있습니다.\n<span style='font-size:14px; color:#666; display:block; margin-top:8px'>식재료를 꼼꼼히 확인해 주세요.</span>",
+    'EN': "Excuse me,\nI have a severe allergy to <span style='color: var(--primary-color)'>{allergens}</span>.\n<span style='font-size:14px; color:#666; display:block; margin-top:8px'>Please ensure my food does not contain these ingredients.</span>",
+    'JA': "すみません、\n私は <span style='color: var(--primary-color)'>{allergens}</span> の\n重度のアレルギーがあります。\n<span style='font-size:14px; color:#666; display:block; margin-top:8px'>これらの食材が含まれていないことを確認してください。</span>",
+    'ZH': "不好意思，\n我有严重的 <span style='color: var(--primary-color)'>{allergens}</span> 过敏。\n<span style='font-size:14px; color:#666; display:block; margin-top:8px'>请确保我的食物中不包含这些成分。</span>"
+};
+
 export const mockRestaurants = [
     {
         id: 1,

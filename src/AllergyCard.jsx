@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, RotateCw, QrCode, Phone, Languages, ChevronDown, Check } from 'lucide-react';
-import { allergensList } from './data';
+import { allergensList, translationTemplates } from './data';
 import './index.css';
 
 const AllergyCard = ({ user = { name: "김라연", birthDate: "2001.03.22" }, allergies = ['shrimp', 'crab', 'peanut'], customMessage }) => {
@@ -47,38 +47,28 @@ const AllergyCard = ({ user = { name: "김라연", birthDate: "2001.03.22" }, al
   };
 
   const getTranslatedMessage = () => {
-      // 1. If it's the default Korean message, return the corresponding pre-defined translation
-      const defaultKorean = "죄송하지만,\n저는 <span style='color: var(--primary-color)'>심각한 알러지</span>가\n있습니다.";
-      
-      // Simple check if customMessage contains the core Korean phrase (to identify default message)
-      if (!customMessage || customMessage.includes("심각한 알러지")) {
-          switch (currentLang) {
-              case 'EN': return "Excuse me,\nI have <span style='color: var(--primary-color)'>severe food allergies</span>.\n<span style='font-size:15px; color:#666; font-weight:400; display:block; margin-top:8px'>Please help me check the ingredients carefully.</span>";
-              case 'JA': return "すみません、\n私は<span style='color: var(--primary-color)'>重度の食物アレルギー</span>が\nあります。\n<span style='font-size:15px; color:#666; font-weight:400; display:block; margin-top:8px'>原材料の確認をお願いします。</span>";
-              case 'ZH': return "不好意思，\n我有<span style='color: var(--primary-color)'>严重的食物过敏</span>。\n<span style='font-size:15px; color:#666; font-weight:400; display:block; margin-top:8px'>请帮我确认一下成分。</span>";
-              default: return customMessage || defaultKorean; // KO returns original
-          }
+      // 1. If Korean, show the custom message (or default)
+      if (currentLang === 'KO') {
+          return customMessage || translationTemplates['KO'];
       }
 
-      // 2. If it's a CUSTOM message (user typed it), we mock the Google Translate API
-      if (currentLang === 'KO') return customMessage;
-
-      // Mock Translation Logic for arbitrary text
-      const mockPrefix = {
-          'EN': "[Translated to English] ",
-          'JA': "[日本語に翻訳] ",
-          'ZH': "[翻译成中文] "
-      };
+      // 2. For foreign languages, GENERATE a safe message based on the user's specific allergies
+      // This ensures 100% accuracy without needing an API.
       
-      return `
-        <div style="color:#333; font-weight:700; font-size:20px; line-height:1.4">
-            ${mockPrefix[currentLang]}<br/>
-            ${customMessage.replace(/<[^>]*>?/gm, '')} 
-        </div>
-        <div style="font-size:13px; color:#999; margin-top:8px; font-weight:400">
-            * This is a mock translation for demo purposes.
-        </div>
-      `;
+      const targetProp = currentLang === 'JA' ? 'jaName' : (currentLang === 'ZH' ? 'zhName' : 'enName');
+      const separator = currentLang === 'EN' ? ', ' : '、';
+      
+      const allergenText = selectedAllergens
+          .map(a => a[targetProp])
+          .join(separator);
+
+      const template = translationTemplates[currentLang];
+      
+      // If no allergies selected, fallback to a generic message or keep templates
+      // But assuming user has allergies if they use this app
+      if (!template) return "";
+
+      return template.replace('{allergens}', allergenText || 'Allergens');
   };
 
   const currentUI = uiTranslations[currentLang];
